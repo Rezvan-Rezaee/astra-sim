@@ -12,7 +12,7 @@ namespace AstraSim {
 
 class AstraNetworkAPI {
   public:
-    enum class BackendType { NotSpecified = 0, Garnet, NS3, Analytical };
+    enum class BackendType { NotSpecified = 0, Garnet, NS3, Analytical, Custom };
 
     AstraNetworkAPI(int rank) : rank(rank) {};
     virtual ~AstraNetworkAPI() {};
