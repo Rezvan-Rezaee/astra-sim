@@ -9,7 +9,7 @@
     "all-gather-implementation": [
         "ring"
     ],
-    "reduce-scatter-implementation": [
+    "reduce-scatter-implementation": [ 
         "ring"
     ],
     "all-to-all-implementation": [

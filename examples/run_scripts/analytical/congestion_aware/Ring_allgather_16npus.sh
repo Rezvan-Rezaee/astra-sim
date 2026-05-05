@@ -34,7 +34,7 @@ echo ""
 
 # run ASTRA-sim
 "${ASTRA_SIM:?}" \
-    --workload-configuration="${WORKLOAD}" \
+    --workload-configuration="${WORKLOAD}" \   
     --system-configuration="${SYSTEM:?}" \
     --remote-memory-configuration="${REMOTE_MEMORY:?}" \
     --network-configuration="${NETWORK:?}"

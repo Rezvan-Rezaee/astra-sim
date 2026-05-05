@@ -1,0 +1,21 @@
+scheduling-policy: Policy (e.g., FIFO/LIFO) that determines the order in which ready communication events are issued.
+
+endpoint-delay: Fixed latency overhead added at the sender/receiver outside the network (e.g., NIC/software delay).
+
+preferred-dataset-splits: Number of chunks each collective message is divided into.
+
+active-chunks-per-dimension: Maximum number of chunks allowed to be in-flight (sent but not completed) concurrently per rank.
+
+all-reduce-implementation: Algorithm used to execute all-reduce operations (e.g., ring, tree).
+all-gather-implementation: Algorithm used to execute all-gather operations.
+reduce-scatter-implementation: Algorithm used to execute reduce-scatter operations.
+all-to-all-implementation: Algorithm used to execute all-to-all operations.
+
+collective-optimization: Heuristic or policy used to optimize scheduling and bandwidth utilization of collective operations.
+
+local-mem-bw: Bandwidth of the device’s local memory used to model data movement to/from communication buffers.
+
+boost-mode: Internal flag enabling more aggressive overlap/scheduling optimizations in Astra-sim.
+
+- Set memory bandwidth to the highest value available in the inputs/system folder to make sure the memory is not the bottleneck.
+- FIFO has a simpler implementation than LIFO.

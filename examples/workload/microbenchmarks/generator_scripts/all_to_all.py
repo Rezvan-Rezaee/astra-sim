@@ -25,7 +25,7 @@ def generate_all_to_all(npus_count: int, coll_size: int, path='./') -> None:
     
     # path to store the generated ET files
     coll_name = "all_to_all"
-    et_path = os.path.join(path, coll_name, f"{npus_count}npus_{coll_size}MB")
+    et_path = os.path.join(path, coll_name, f"{npus_count}npus_{coll_size}MB") 
     if not os.path.exists(et_path):
         os.makedirs(et_path)
         

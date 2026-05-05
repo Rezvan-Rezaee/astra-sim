@@ -13,7 +13,7 @@ from chakra.schema.protobuf.et_def_pb2 import (
 def main() -> None:
     # metadata
     npus_count = 8  # 8 NPUs
-    coll_size = 1_048_576  # 1 MB
+    coll_size = 1_048_576  # 1 MB 
 
     for npu_id in range(npus_count):
         output_filename = f"chakra_trace.{npu_id}.et"
