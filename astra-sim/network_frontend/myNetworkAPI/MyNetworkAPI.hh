@@ -48,10 +48,6 @@ class MyNetworkAPI : public AstraNetworkAPI, public sc_core::sc_module {
         return BackendType::Custom;   // TODO: is this accurate?
     }
 
-    timespec_t sim_get_time() {
-        return packetGenerator->get_current_time();
-    }; 
-
     // Notifies that the workload for this rank has finished.
     // Note that we have one network handler per rank.
     // Therefore, when implementing this function, the network handler must

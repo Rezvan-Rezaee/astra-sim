@@ -49,3 +49,7 @@ void MyNetworkAPI::sim_schedule(timespec_t delta,
 
     scheduler->schedule(delta, fun_ptr, fun_arg);
 }
+
+timespec_t MyNetworkAPI::sim_get_time() {
+    return systemCTimeToTimespec(packetGenerator->get_current_time());
+}
