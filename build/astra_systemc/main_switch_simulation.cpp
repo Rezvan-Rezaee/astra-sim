@@ -7,15 +7,41 @@
 #include <vector>
 
 // Astra-sim
-#include "astra-sim/system/Sys.hh"
 #include "astra-sim/common/AstraNetworkAPI.hh"
 #include "astra-sim/common/AstraRemoteMemoryAPI.hh"
+#include "astra-sim/system/Sys.hh"
+#include "extern/remote_memory_backend/analytical/AnalyticalRemoteMemory.hh"
 
 // MyNetworkAPI
 #include "MyNetworkAPI.hh"
 
+// SystemC switch and packet generator
+#include "Packet.h"
+#include "PacketGeneratorInterface.h"
+#include "ScPacketGen.h"
+#include "ScSwitchBox.h"
+#include "ScSwitchDSS.h"
+#include "ScSwitchHierXbar.h"
+#include "Switch.h"
+#include "SwitchBanyan.h"
+#include "SwitchCrossbar.h"
+#include "SwitchDSS.h"
+#include "SwitchHierXbar.h"
+// #include "runtimeMonitor.h"
+#include "support/ArgParser.h"
+#include "support/Args.h"
+#include "support/Cmds.h"
+
+#include "SystemCScheduler.h"
+
+const size_t NumPorts = 16;
+
+enum class SwitchType { paradox = 0, hierXbar };
+
+#define USE_DSS
+
 class NullRemoteMemoryAPI : public AstraSim::AstraRemoteMemoryAPI {
-public:
+  public:
     NullRemoteMemoryAPI() = default;
     ~NullRemoteMemoryAPI() override = default;
 };
@@ -24,23 +50,20 @@ int sc_main(int argc, char** argv) {
     (void)argc;
     (void)argv;
 
-    // ------------------------------------------------------------
-    // Fixed configuration
-    // ------------------------------------------------------------
-
-    constexpr int N = 4;
+    constexpr int N = 16;  // Number of ranks/NPUs
 
     const std::string workload_config =
-        "inputs/workload/PLACEHOLDER_WORKLOAD";
+        "inputs/workload/microbenchmarks/all_gather/16npus_1MB/all_gather";
 
-    const std::string system_config =
-        "inputs/system/my_system_config.json";
+    const std::string system_config = "inputs/system/my_system_config.json";
 
     const std::string comm_group_config =
-        "inputs/comm_group/PLACEHOLDER_COMM_GROUP.json";
+        "build/astra_systemc/network_cfg_.json";
 
-    const std::string run_name =
-        "systemc_astrasim_test";
+    const std::string remote_memory_configuration =
+        "examples/remote_memory/analytical/no_memory_expansion.json";
+
+    const std::string run_name = "systemc_astrasim_test";
 
     const std::vector<int> physical_dims = {N};
     const std::vector<int> queues_per_dim = {1};
@@ -49,170 +72,101 @@ int sc_main(int argc, char** argv) {
     constexpr double comm_scale = 1.0;
     constexpr bool rendezvous_enabled = false;
 
-    const sc_core::sc_time step(1, sc_core::SC_NS);
-    constexpr std::uint64_t max_steps = 100000000;
-
-    std::cout << "[main] Starting Astra-sim + SystemC integration\n";
-    std::cout << "[main] N ranks           = " << N << "\n";
-    std::cout << "[main] workload config   = " << workload_config << "\n";
-    std::cout << "[main] system config     = " << system_config << "\n";
-    std::cout << "[main] comm group config = " << comm_group_config << "\n";
+    const sc_core::sc_time step(
+        1, sc_core::SC_NS);  // TODO: adjust step time as needed to match clock
+                             // period
 
     // ------------------------------------------------------------
-    // 1. Create your SystemC switch here.
-    // ------------------------------------------------------------
-    //
-    // Example:
-    // auto top_switch = std::make_unique<YourSystemCSwitch>("top_switch", N);
-    //
+    Packet::resetPacketID();
+
+    sc_report_handler::set_verbosity_level(SC_HIGH);
+    sc_report_handler::set_actions(SC_ERROR, SC_DISPLAY | SC_LOG);
+
+    const auto t0 = std::chrono::steady_clock::now();
+
+    ScPacketGen packetGen(NumPorts, 50);
+
+#if defined(USE_DSS)
+    SwitchDSS swParadox(NumPorts, "DSS", 1200000);
+    ScSwitchDSS dut("paradox", swParadox, packetGen, 3);
+    // dut.enableDebug(swParams.debugEnabled);
+#else
+    SwitchHierXbar swHierXbar(NumPorts, 1200000, "HierXbar");
+    ScSwitchHierXbar dut("hierXbar", swHierXbar, packetGen, 3);
+#endif
+
+    dut.setPayloadEnabledAll(true);
+
+    dut.setStatisticsParameters(20, 40);
+    dut.setCycleStatsEnabled(false);
+
+    PacketGeneratorInterface packetGeneratorInterface(NumPorts, 8, 10);
+    dut.setPacketGeneratorInterface(&packetGeneratorInterface);
 
     // ------------------------------------------------------------
-    // 2. Create N network APIs.
-    // ------------------------------------------------------------
 
-    std::vector<std::unique_ptr<MyNetworkAPI>> network_apis;
+    std::vector<SystemCScheduler> scheduler(N);
+
+    std::vector<std::unique_ptr<AstraSim::MyNetworkAPI>> network_apis;
     network_apis.reserve(N);
-
     for (int rank = 0; rank < N; ++rank) {
-        network_apis.emplace_back(
-            std::make_unique<MyNetworkAPI>(rank)
-        );
-
-        // Connect API rank -> switch port rank here.
-        //
-        // Example:
-        // network_apis.back()->attach_switch(top_switch.get(), rank);
-        // top_switch->bind_api(rank, network_apis.back().get());
-
-        std::cout << "[main] Created MyNetworkAPI for rank "
-                  << rank << "\n";
+        network_apis.emplace_back(std::make_unique<AstraSim::MyNetworkAPI>(
+            rank, &packetGeneratorInterface, &scheduler.at(rank)));
     }
 
-    // ------------------------------------------------------------
-    // 3. Create remote-memory backends.
-    // ------------------------------------------------------------
-
-    std::vector<std::unique_ptr<NullRemoteMemoryAPI>> remote_memories;
-    remote_memories.reserve(N);
-
-    for (int rank = 0; rank < N; ++rank) {
-        remote_memories.emplace_back(
-            std::make_unique<NullRemoteMemoryAPI>()
-        );
-    }
-
-    // ------------------------------------------------------------
-    // 4. Create N Astra-sim systems.
-    // ------------------------------------------------------------
+    const auto memory_api =
+        std::make_unique<Analytical::AnalyticalRemoteMemory>(remote_memory_configuration);
 
     std::vector<std::unique_ptr<AstraSim::Sys>> systems;
     systems.reserve(N);
-
     for (int rank = 0; rank < N; ++rank) {
-        systems.emplace_back(
-            std::make_unique<AstraSim::Sys>(
-                rank,
-                workload_config,
-                comm_group_config,
-                system_config,
-                remote_memories[rank].get(),
-                network_apis[rank].get(),
-                physical_dims,
-                queues_per_dim,
-                injection_scale,
-                comm_scale,
-                rendezvous_enabled
-            )
-        );
-
-        std::cout << "[main] Created AstraSim::Sys for rank "
-                  << rank << "\n";
+        systems.emplace_back(std::make_unique<AstraSim::Sys>(
+            rank, workload_config, comm_group_config, system_config,
+            memory_api.get(), network_apis.at(rank).get(), physical_dims,
+            queues_per_dim, injection_scale, comm_scale, rendezvous_enabled));
     }
 
-    // ------------------------------------------------------------
-    // 5. Initialize Astra-sim systems.
-    // ------------------------------------------------------------
-
     for (int rank = 0; rank < N; ++rank) {
-        const std::string sys_name =
-            run_name + "_rank_" + std::to_string(rank);
+        const std::string sys_name = run_name + "_rank_" + std::to_string(rank);
 
-        const bool ok = systems[rank]->initialize_sys(sys_name);
+        const bool ok = systems.at(rank)->initialize_sys(sys_name);
 
-        std::cout << "[main] initialize_sys(rank="
-                  << rank << ") returned " << ok << "\n";
+        std::cout << "[main] initialize_sys(rank=" << rank << ") returned "
+                  << ok << "\n";
 
         if (!ok) {
-            std::cerr << "[main] ERROR: failed to initialize rank "
-                      << rank << "\n";
+            std::cerr << "[main] ERROR: failed to initialize rank " << rank
+                      << "\n";
             return 1;
         }
     }
 
-    // ------------------------------------------------------------
-    // 6. SystemC-owned simulation loop.
-    // ------------------------------------------------------------
+    sc_core::sc_start();
 
-    std::uint64_t step_count = 0;
+    // for (int rank = 0; rank < N; ++rank) {
+    //     systems[rank]->call_events();
+    // }
 
-    while (true) {
-        // Let Astra-sim process currently ready events.
-        for (int rank = 0; rank < N; ++rank) {
-            systems[rank]->call_events();
-        }
-
-        // Advance SystemC.
-        sc_core::sc_start(step);
-        ++step_count;
-
-        if (step_count % 1000 == 0) {
-            std::cout << "[main] step=" << step_count
-                      << " sc_time=" << sc_core::sc_time_stamp()
-                      << "\n";
-        }
-
-        // --------------------------------------------------------
-        // Completion check.
-        // Replace network_done with your actual switch pending check.
-        // --------------------------------------------------------
-
-        bool astra_done = true;
-
-        for (int rank = 0; rank < N; ++rank) {
-            if (systems[rank]->pending_events != 0) {
-                astra_done = false;
-                break;
-            }
-        }
-
-        bool network_done = true;
-
-        // Replace this:
-        //
-        // network_done = top_switch->num_in_flight_messages() == 0;
-        // network_done = top_switch->empty();
-        // network_done = !top_switch->has_pending_messages();
-
-        if (astra_done && network_done) {
-            std::cout << "[main] Done: Astra-sim workload complete "
-                      << "and SystemC network empty\n";
-            break;
-        }
-
-        if (step_count >= max_steps) {
-            std::cerr << "[main] ERROR: reached max_steps without completion\n";
-            std::cerr << "[main] Likely causes:\n";
-            std::cerr << "       1. Network callbacks are not called.\n";
-            std::cerr << "       2. Astra-sim still has pending events.\n";
-            std::cerr << "       3. SystemC switch still has in-flight messages.\n";
-            break;
+    for (int rank = 0; rank < N; ++rank) {
+        if (systems[rank]->pending_events != 0) {
+            ASSERT_PRINT(false,
+                         "Rank %d still has pending events at the end of "
+                         "simulation: %zu\n",
+                         rank, systems[rank]->pending_events);
         }
     }
 
-    sc_core::sc_stop();
+#if defined(USE_DSS)
+    dut.printSimulationResults_dss();
+#else
+    dut.printSimulationResults_HierXbar();
+#endif
+    dut.printStats();
 
-    std::cout << "[main] Final SystemC time = "
-              << sc_core::sc_time_stamp() << "\n";
+    const auto t1 = std::chrono::steady_clock::now();
+    const std::chrono::duration<double> elapsed = t1 - t0;
+
+    std::cout << ", " << elapsed.count() << "\n";
 
     return 0;
 }

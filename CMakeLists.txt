@@ -21,10 +21,10 @@ endif()
 project(AstraSim)
 
 # Add libraries.
-include(FetchContent)
+include(FetchContent) 
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/fmt")
-option(SPDLOG_FMT_EXTERNAL ON) # override default option for spdlog.
+# option(SPDLOG_FMT_EXTERNAL ON) # override default option for spdlog.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog")
 FetchContent_Declare(
     yaml-cpp
@@ -62,7 +62,9 @@ file(GLOB srcs
     "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/feeder_v3/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/extern/remote_memory_backend/analytical/*.cc")
+    "${CMAKE_CURRENT_SOURCE_DIR}/extern/remote_memory_backend/analytical/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/extern/helper"
+    )
 
 # Compile AstraSim Library
 add_library(AstraSim STATIC ${srcs})
@@ -85,7 +87,7 @@ target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/)
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf)
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils)
-target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
+target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
 target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIR})
 
 # Same as above.

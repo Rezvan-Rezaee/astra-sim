@@ -19,8 +19,8 @@ int MyNetworkAPI::sim_send(void* buffer,
                            void* fun_arg) {
     size_t id = packetGenerator->generate_message_id();
 
-    packetGenerator->inject_message(id, rank, dst, tag, count, type, request,
-                                    msg_handler, fun_arg, rank);
+    packetGenerator->inject_message(id, rank, dst, tag, count, type,
+                                    msg_handler, fun_arg);
 
     return 0;
 }
@@ -35,13 +35,13 @@ int MyNetworkAPI::sim_recv(void* buffer,
                            void* fun_arg) {
     size_t id = packetGenerator->generate_message_id();
 
-    packetGenerator->inject_message(id, src, rank, tag, count, type, request,
-                                    msg_handler, fun_arg, rank);
+    packetGenerator->inject_message(id, src, rank, tag, count, type,
+                                    msg_handler, fun_arg);
 
     return 0;
 }
 
-void MyNetworkAPI::sim_schedule(timespec_t delta,
+void MyNetworkAPI::sim_schedule(AstraSim::timespec_t delta,
                                 void (*fun_ptr)(void* fun_arg),
                                 void* fun_arg) {
 
@@ -50,6 +50,12 @@ void MyNetworkAPI::sim_schedule(timespec_t delta,
     scheduler->schedule(delta, fun_ptr, fun_arg);
 }
 
-timespec_t MyNetworkAPI::sim_get_time() {
+AstraSim::timespec_t MyNetworkAPI::sim_get_time() {
     return systemCTimeToTimespec(packetGenerator->get_current_time());
+}
+
+void MyNetworkAPI::sim_notify_finished() {
+    packetGenerator->notify_finished(rank);
+    return;  // TODO: implement this function when we have a better idea of how
+             // to determine when all ranks are finished.
 }

@@ -15,6 +15,8 @@ def main() -> None:
     npus_count = 8  # 8 NPUs
     coll_size = 1_048_576  # 1 MB 
 
+    node_id = 0
+
     for npu_id in range(npus_count):
         output_filename = f"chakra_trace.{npu_id}.et"
         with open(output_filename, "wb") as et:
@@ -23,7 +25,7 @@ def main() -> None:
 
             # create Chakra Node
             node = ChakraNode()
-            node.id = 1
+            node.id = node_id
             node.name = "All-Reduce"
             node.type = COMM_COLL_NODE
 
@@ -34,6 +36,7 @@ def main() -> None:
 
             # store Chakra ET file
             encode_message(et, node)
+            node_id += 1
 
 if __name__ == "__main__":
     main()

@@ -7,6 +7,8 @@
 
 #include "astra-sim/common/AstraNetworkAPI.hh"
 #include "astra-sim/system/Common.hh"
+#include "PacketGeneratorInterface.h"
+#include "SystemCScheduler.h"
 
 class PacketGeneratorInterface;
 
@@ -38,11 +40,11 @@ class MyNetworkAPI : public AstraNetworkAPI, public sc_core::sc_module {
                  void (*msg_handler)(void* fun_arg),
                  void* fun_arg) override;
 
-    void sim_schedule(timespec_t delta,
+    void sim_schedule(AstraSim::timespec_t delta,
                       void (*fun_ptr)(void* fun_arg),
                       void* fun_arg) override;
 
-    timespec_t sim_get_time() override;
+    AstraSim::timespec_t sim_get_time() override;
 
     BackendType get_backend_type() override {
         return BackendType::Custom;   // TODO: is this accurate?
@@ -52,13 +54,12 @@ class MyNetworkAPI : public AstraNetworkAPI, public sc_core::sc_module {
     // Note that we have one network handler per rank.
     // Therefore, when implementing this function, the network handler must
     // find a way to concur that all ranks have finished their workloads.
-    virtual void sim_notify_finished() {
-        return;  // TODO: implement this function when we have a better idea of how to determine when all ranks are finished.
-    }
+    virtual void sim_notify_finished();
 
   private:
     PacketGeneratorInterface* packetGenerator = nullptr;
     SystemCScheduler* scheduler = nullptr;
+    bool simulation_finished = false;
 };
 
 }  // namespace AstraSim

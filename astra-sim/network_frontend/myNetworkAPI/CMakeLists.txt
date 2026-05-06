@@ -4,6 +4,7 @@ project(AstraSim_MyNetworkAPI LANGUAGES CXX)
 
 add_library(AstraSim_MyNetworkAPI STATIC
     MyNetworkAPI.cc
+    SystemCScheduler.cpp
 )
 
 target_include_directories(AstraSim_MyNetworkAPI

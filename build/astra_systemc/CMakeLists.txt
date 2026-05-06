@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.15)
 project(AstraSim_SystemC LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -12,7 +11,9 @@ endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/systemc_import.cmake)
 
-set(SYSTEMC_SWITCH_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../ParaDOX/cpp/systemC")
+set(TOP_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/../../..")
+
+set(SYSTEMC_SWITCH_ROOT "${TOP_FOLDER}/ParaDOX/cpp/systemC")
 
 set(CPP_ROOT "${SYSTEMC_SWITCH_ROOT}/..")
 set(CORE_INC "${CPP_ROOT}/inc")
@@ -30,7 +31,7 @@ add_library(paradox_systemc_switch STATIC
 
     "${CORE_SRC}/basics.cpp"
     "${CORE_SRC}/Packet.cpp"
-    "${CORE_SRC}/SingleFifo.cpp
+    "${CORE_SRC}/SingleFifo.cpp"
     "${CORE_SRC}/Fifo.cpp"
     "${CORE_SRC}/PacketGenerator.cpp"
     "${CORE_SRC}/Ports.cpp"
@@ -51,6 +52,7 @@ target_include_directories(paradox_systemc_switch
     PUBLIC
         "${SC_INC}"
         "${CORE_INC}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../astra-sim/network_frontend/myNetworkAPI"
 )
 
 target_link_libraries(paradox_systemc_switch
@@ -58,12 +60,14 @@ target_link_libraries(paradox_systemc_switch
         systemc_import
 )
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../ AstraSim)
-
+add_subdirectory(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    AstraSim
+)
 
 add_subdirectory(
     ${CMAKE_CURRENT_SOURCE_DIR}/../../astra-sim/network_frontend/myNetworkAPI
-    AstraSim_SystemC_NetworkAPI
+    AstraSim_MyNetworkAPI
 )
 
 
@@ -74,7 +78,7 @@ add_executable(AstraSim_SystemC
 target_link_libraries(AstraSim_SystemC
     PRIVATE
         AstraSim
-        AstraSim_SystemC_NetworkAPI
+        AstraSim_MyNetworkAPI
         paradox_systemc_switch
         systemc_import
 )
