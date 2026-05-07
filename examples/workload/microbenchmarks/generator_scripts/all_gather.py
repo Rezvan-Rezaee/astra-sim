@@ -1,9 +1,7 @@
-## ******************************************************************************
-## This source code is licensed under the MIT license found in the
-## LICENSE file in the root directory of this source tree.
-##
-## Copyright (c) 2024 Georgia Institute of Technology
-## ******************************************************************************
+# run with this command (from the root of the repo /mnt/c/Users/rezva/Documents/paradox/astra-sim):
+# PYTHONPATH=$PWD python3 examples/workload/microbenchmarks/generator_scripts/all_gather.py   --npus-count 256   --coll-size 1
+
+# PYTHONPATH=$PWD python3 /mnt/c/Users/rezva/Documents/paradox/astra-sim/examples/workload/microbenchmarks/generator_scripts/all_gather.py --npus-count 64  --coll-size 1
 
 import argparse
 import os

@@ -14,7 +14,7 @@ class PacketGeneratorInterface;
 
 namespace AstraSim {
 
-class MyNetworkAPI : public AstraNetworkAPI, public sc_core::sc_module {
+class MyNetworkAPI : public AstraNetworkAPI {
   public:
     MyNetworkAPI(int rank,
                  PacketGeneratorInterface* pg,

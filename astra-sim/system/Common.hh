@@ -1,8 +1,3 @@
-/******************************************************************************
-This source code is licensed under the MIT license found in the
-LICENSE file in the root directory of this source tree.
-*******************************************************************************/
-
 #ifndef __COMMON_HH__
 #define __COMMON_HH__
 
@@ -48,6 +43,27 @@ enum class ComType {
     All_to_All,
     All_Reduce_All_to_All
 };
+
+// Helper function to convert ComType to string for logging purposes.
+static const char* comTypeToString(AstraSim::ComType type)
+{
+    switch (type) {
+        case AstraSim::ComType::None:
+            return "None";
+        case AstraSim::ComType::Reduce_Scatter:
+            return "Reduce_Scatter";
+        case AstraSim::ComType::All_Gather:
+            return "All_Gather";
+        case AstraSim::ComType::All_Reduce:
+            return "All_Reduce";
+        case AstraSim::ComType::All_to_All:
+            return "All_to_All";
+        case AstraSim::ComType::All_Reduce_All_to_All:
+            return "All_Reduce_All_to_All";
+        default:
+            return "Unknown";
+    }
+}
 
 enum class CollectiveOptimization { Baseline = 0, LocalBWAware };
 

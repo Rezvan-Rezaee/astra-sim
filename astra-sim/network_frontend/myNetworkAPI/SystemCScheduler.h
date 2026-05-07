@@ -27,7 +27,7 @@ struct ScheduledCallbackCompare {
 
 class SystemCScheduler : public sc_core::sc_module {
   public:
-    SystemCScheduler(sc_core::sc_module_name name = sc_core::sc_gen_unique_name("SystemCScheduler"));
+    SystemCScheduler(sc_core::sc_module_name name);
 
     void schedule(AstraSim::timespec_t delta, void (*callback)(void*), void* arg);
 

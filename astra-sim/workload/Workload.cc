@@ -1,8 +1,3 @@
-/******************************************************************************
-This source code is licensed under the MIT license found in the
-LICENSE file in the root directory of this source tree.
-*******************************************************************************/
-
 #include "astra-sim/workload/Workload.hh"
 
 #include "astra-sim/common/Logging.hh"
@@ -13,6 +8,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
 #include <json/json.hpp>
 
+#include <cstdio>
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
@@ -137,12 +133,27 @@ void Workload::issue_dep_free_nodes() {
     auto& dependancy_resolver = this->et_feeder->getDependancyResolver();
     auto dependancy_free_nodes =
         dependancy_resolver.get_dependancy_free_nodes();
+
+    std::fprintf(
+        stderr,
+        "[WORKLOAD] READY sys=%d tick=%llu ready_count=%zu ongoing_count=%zu\n",
+        sys->id, Sys::boostedTick(), dependancy_free_nodes.size(),
+        dependancy_resolver.get_ongoing_nodes().size());
+    std::fflush(stderr);
+
     std::set<uint64_t> dependancy_free_nodes_set;
     for (const auto node_id : dependancy_free_nodes) {
         dependancy_free_nodes_set.insert(node_id);
     }
     for (const auto node_id : dependancy_free_nodes_set) {
         std::shared_ptr<ETFeederNode> node = et_feeder->lookupNode(node_id);
+        std::fprintf(stderr,
+                     "[WORKLOAD] CHECK sys=%d tick=%llu node=%lu name=%s "
+                     "type=%d available=%d\n",
+                     sys->id, Sys::boostedTick(), node->id(),
+                     node->name().c_str(), static_cast<int>(node->type()),
+                     hw_resource->is_available(node));
+        std::fflush(stderr);
         if (hw_resource->is_available(node)) {
             issue(node);
         }
@@ -150,6 +161,11 @@ void Workload::issue_dep_free_nodes() {
 }
 
 void Workload::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
+    std::fprintf(stderr,
+                 "[WORKLOAD] ISSUE sys=%d tick=%llu node=%lu name=%s type=%d\n",
+                 sys->id, Sys::boostedTick(), node->id(), node->name().c_str(),
+                 static_cast<int>(node->type()));
+    std::fflush(stderr);
     auto logger = LoggerFactory::get_logger("workload");
     if (sys->trace_enabled) {
         logger->debug("issue,sys->id={}, tick={}, node->id={}, "
@@ -286,6 +302,9 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
+    std::fprintf(stderr, "[WORKLOAD] COMM sys=%d tick=%llu node=%lu name=%s\n",
+                 sys->id, Sys::boostedTick(), node->id(), node->name().c_str());
+    std::fflush(stderr);
     if (node->is_cpu_op<bool>(false)) {
         throw std::runtime_error("Comm node should not be on CPU");
     }
@@ -345,26 +364,26 @@ void Workload::issue_coll_comm(
     const auto comm_priority = node->comm_priority<uint32_t>();  // default 0u
 
     if (comm_type == ChakraCollectiveCommType::ALL_REDUCE) {
-        DataSet* fp = sys->generate_all_reduce(comm_size, involved_dims,
-                                               comm_group, comm_priority, node->id());
+        DataSet* fp = sys->generate_all_reduce(
+            comm_size, involved_dims, comm_group, comm_priority, node->id());
         collective_comm_node_id_map[fp->my_id] = node->id();
         collective_comm_wrapper_map[fp->my_id] = fp;
         fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
     } else if (comm_type == ChakraCollectiveCommType::ALL_TO_ALL) {
-        DataSet* fp = sys->generate_all_to_all(comm_size, involved_dims,
-                                               comm_group, comm_priority, node->id());
+        DataSet* fp = sys->generate_all_to_all(
+            comm_size, involved_dims, comm_group, comm_priority, node->id());
         collective_comm_node_id_map[fp->my_id] = node->id();
         collective_comm_wrapper_map[fp->my_id] = fp;
         fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
     } else if (comm_type == ChakraCollectiveCommType::ALL_GATHER) {
-        DataSet* fp = sys->generate_all_gather(comm_size, involved_dims,
-                                               comm_group, comm_priority, node->id());
+        DataSet* fp = sys->generate_all_gather(
+            comm_size, involved_dims, comm_group, comm_priority, node->id());
         collective_comm_node_id_map[fp->my_id] = node->id();
         collective_comm_wrapper_map[fp->my_id] = fp;
         fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
     } else if (comm_type == ChakraCollectiveCommType::REDUCE_SCATTER) {
-        DataSet* fp = sys->generate_reduce_scatter(comm_size, involved_dims,
-                                                   comm_group, comm_priority, node->id());
+        DataSet* fp = sys->generate_reduce_scatter(
+            comm_size, involved_dims, comm_group, comm_priority, node->id());
         collective_comm_node_id_map[fp->my_id] = node->id();
         collective_comm_wrapper_map[fp->my_id] = fp;
         fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
@@ -411,6 +430,13 @@ void Workload::issue_send_comm(
     sehd->wlhd = new WorkloadLayerHandlerData;
     sehd->wlhd->node_id = node->id();
     sehd->event = EventType::PacketSent;
+
+    std::fprintf(stderr,
+                 "[WORKLOAD] SEND sys=%d tick=%llu node=%lu src=%d dst=%d "
+                 "size=%lu tag=%d\n",
+                 sys->id, Sys::boostedTick(), node->id(), src, dst, size, tag);
+    std::fflush(stderr);
+
     sys->front_end_sim_send(0, Sys::dummy_data, size, UINT8, dst, tag, &snd_req,
                             Sys::FrontEndSendRecvType::NATIVE,
                             &Sys::handleEvent, sehd);
@@ -434,6 +460,11 @@ void Workload::issue_recv_comm(
     rcehd->wlhd->node_id = node->id();
     rcehd->workload = this;
     rcehd->event = EventType::PacketReceived;
+    std::fprintf(stderr,
+                 "[WORKLOAD] RECV sys=%d tick=%llu node=%lu src=%d dst=%d "
+                 "size=%lu tag=%d\n",
+                 sys->id, Sys::boostedTick(), node->id(), src, dst, size, tag);
+    std::fflush(stderr);
     sys->front_end_sim_recv(0, Sys::dummy_data, size, UINT8, src, tag, &rcv_req,
                             Sys::FrontEndSendRecvType::NATIVE,
                             &Sys::handleEvent, rcehd);
@@ -459,6 +490,11 @@ void Workload::call(EventType event, CallData* data) {
     if (is_finished) {
         return;
     }
+
+    std::fprintf(
+        stderr, "[WORKLOAD] CALLBACK sys=%d tick=%llu event=%d data_null=%d\n",
+        sys->id, Sys::boostedTick(), static_cast<int>(event), data == nullptr);
+    std::fflush(stderr);
 
     if (event == EventType::CollectiveCommunicationFinished) {
         IntData* int_data = (IntData*)data;

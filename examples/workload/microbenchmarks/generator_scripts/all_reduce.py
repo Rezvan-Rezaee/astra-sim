@@ -1,9 +1,5 @@
-## ******************************************************************************
-## This source code is licensed under the MIT license found in the
-## LICENSE file in the root directory of this source tree.
-##
-## Copyright (c) 2024 Georgia Institute of Technology
-## ******************************************************************************
+# Directory: rezvan_r@Rezvan:/mnt/c/Users/rezva/Documents/paradox/astra-sim$ 
+# Command: PYTHONPATH=$PWD python3 examples/workload/microbenchmarks/generator_scripts/all_to_all.py   --npus-count 256   --coll-size 1
 
 import argparse
 import os

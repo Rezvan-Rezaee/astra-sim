@@ -27,6 +27,38 @@ enum class CollectiveImplType {
     CustomCollectiveImpl,
 };
 
+static const char* collectiveImplTypeToString(CollectiveImplType type)
+{
+    switch (type) {
+        case CollectiveImplType::Ring:
+            return "Ring";
+        case CollectiveImplType::OneRing:
+            return "OneRing";
+        case CollectiveImplType::Direct:
+            return "Direct";
+        case CollectiveImplType::OneDirect:
+            return "OneDirect";
+        case CollectiveImplType::AllToAll:
+            return "AllToAll";
+        case CollectiveImplType::DoubleBinaryTreeLocalAllToAll:
+            return "DoubleBinaryTreeLocalAllToAll";
+        case CollectiveImplType::LocalRingNodeA2AGlobalDBT:
+            return "LocalRingNodeA2AGlobalDBT";
+        case CollectiveImplType::HierarchicalRing:
+            return "HierarchicalRing";
+        case CollectiveImplType::DoubleBinaryTree:
+            return "DoubleBinaryTree";
+        case CollectiveImplType::HalvingDoubling:
+            return "HalvingDoubling";
+        case CollectiveImplType::OneHalvingDoubling:
+            return "OneHalvingDoubling";
+        case CollectiveImplType::CustomCollectiveImpl:
+            return "CustomCollectiveImpl";
+        default:
+            return "Unknown";
+    }
+}
+
 /*
  * CollectiveImpl holds the user's description on how a collective operation is implemented.
  * That implementation is held in the system layer input.
