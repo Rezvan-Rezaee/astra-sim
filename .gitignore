@@ -16,6 +16,12 @@ build/astra_garnet/build/
 build/astra_garnet/result/
 build/astra_htsim/build/
 build/astra_systemc/build/
+build/astra_systemc/debug_log/
+build/astra_systemc/diagnostic_logs/
+build/astra_systemc/test_log/
+examples/workload/microbenchmarks/all_gather/
+examples/workload/microbenchmarks/all_reduce/
+examples/workload/microbenchmarks/all_to_all/
 
 # Generated Chakra ET files
 *.eg

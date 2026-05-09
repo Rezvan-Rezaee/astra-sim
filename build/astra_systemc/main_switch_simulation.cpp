@@ -67,6 +67,32 @@ static size_t parseUnsignedArg(const char* arg, const std::string& name) {
     }
 }
 
+static double parseDoubleArg(const char* arg, const std::string& name) {
+    try {
+        std::string s(arg);
+
+        if (s.empty() || s[0] == '-') {
+            throw std::invalid_argument("negative or empty value");
+        }
+
+        size_t pos = 0;
+        double value = std::stod(s, &pos);
+
+        if (pos != s.size()) {
+            throw std::invalid_argument("contains non-numeric characters");
+        }
+
+        if (value <= 0.0) {
+            throw std::invalid_argument("must be > 0");
+        }
+
+        return value;
+    } catch (const std::exception& e) {
+        std::cerr << "Invalid " << name << ": " << arg
+                  << " (" << e.what() << ")" << std::endl;
+        std::exit(1);
+    }
+}
 class NullRemoteMemoryAPI : public AstraSim::AstraRemoteMemoryAPI {
   public:
     NullRemoteMemoryAPI() = default;
@@ -77,12 +103,14 @@ int sc_main(int argc, char** argv) {
     (void)argc;
     (void)argv;
 
-    if (argc != 3) {
+    if (argc != 5) {
         ASSERT_PRINT(
             false,
-            "Usage: %s <num_ports> <bytes_per_cell>\n"
+            "Usage: %s <num_ports> <bytes_per_cell> <collective_communication_type> <communication_scale>\n"
             "  num_ports: Number of switch ports (e.g., 4, 8, 16)\n"
-            "  bytes_per_cell: Number of bytes per cell (e.g., 64, 128)\n",
+            "  bytes_per_cell: Number of bytes per cell (e.g., 64, 128)\n"
+            "  collective_communication_type: Type of collective communication (0 for all_reduce, 1 for all_gather, 2 for all_to_all)\n"
+            "  communication_scale: Scale factor for communication (e.g., 1.0, 2.0)\n",
             // "  switch_type: Type of switch to simulate (0 for paradox, "
             // "1 for hierXbar)\n",
             argv[0]);
@@ -91,12 +119,32 @@ int sc_main(int argc, char** argv) {
     // const int switchTypeInt = parseUnsignedArg(argv[1], "switch_type");
     const size_t numPorts = parseUnsignedArg(argv[1], "num_ports");
     const size_t bytesPerCell = parseUnsignedArg(argv[2], "bytes_per_cell");
+    const size_t communicationType = parseUnsignedArg(argv[3], "collective_communication_type");
+    const double comm_scale = parseDoubleArg(argv[4], "communication_scale");  // times workload size by this factor (1 MiB workload default)
+    const size_t et_comm_scale = parseUnsignedArg(argv[4], "et scale");
+    
+    std::string communicationTypeStr;
+    switch (communicationType) {
+        case 0:
+            communicationTypeStr = "all_reduce";
+            break;
+        case 1:
+            communicationTypeStr = "all_gather";
+            break;
+        case 2:
+            communicationTypeStr = "all_to_all";
+            break;
+        default:
+            std::cerr << "Invalid collective communication type: " << communicationType
+                      << ". Valid values are 0 (all_reduce), 1 (all_gather), and 2 (all_to_all)." << std::endl;
+            return 1;
+    }
 
     std::cout << "Starting SystemC AstraSim Simulation\n";
 
     std::string workloadDir = "/mnt/c/Users/rezva/Documents/paradox/astra-sim/"
-                              "examples/workload/microbenchmarks/all_gather/" +
-                              std::to_string(numPorts) + "npus_1MB/all_gather";
+                              "examples/workload/microbenchmarks/" + communicationTypeStr + "/" +
+                              std::to_string(numPorts) + "npus_" + std::to_string(et_comm_scale) + "MB/" + communicationTypeStr;
     const std::string workload_config = workloadDir;
 
     const std::string system_config =
@@ -118,7 +166,6 @@ int sc_main(int argc, char** argv) {
     const std::vector<int> queues_per_dim = {1};
 
     constexpr double injection_scale = 1.0;
-    constexpr double comm_scale = 1.0;
     constexpr bool rendezvous_enabled = false;
 
 #if defined(USE_DSS)
@@ -155,8 +202,7 @@ int sc_main(int argc, char** argv) {
     dut.setCycleStatsEnabled(true);
     dut.setActiveCycles(2000000);
 
-    PacketGeneratorInterface packetGeneratorInterface(numPorts, bytesPerCell,
-                                                      10);
+    PacketGeneratorInterface packetGeneratorInterface(numPorts, bytesPerCell, 10);
     dut.setPacketGeneratorInterface(&packetGeneratorInterface);
 
     // ------------------------------------------------------------

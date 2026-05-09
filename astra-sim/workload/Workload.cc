@@ -134,12 +134,12 @@ void Workload::issue_dep_free_nodes() {
     auto dependancy_free_nodes =
         dependancy_resolver.get_dependancy_free_nodes();
 
-    std::fprintf(
-        stderr,
-        "[WORKLOAD] READY sys=%d tick=%llu ready_count=%zu ongoing_count=%zu\n",
-        sys->id, Sys::boostedTick(), dependancy_free_nodes.size(),
-        dependancy_resolver.get_ongoing_nodes().size());
-    std::fflush(stderr);
+    // std::fprintf(
+    //     stderr,
+    //     "[WORKLOAD] READY sys=%d tick=%llu ready_count=%zu ongoing_count=%zu\n",
+    //     sys->id, Sys::boostedTick(), dependancy_free_nodes.size(),
+    //     dependancy_resolver.get_ongoing_nodes().size());
+    // std::fflush(stderr);
 
     std::set<uint64_t> dependancy_free_nodes_set;
     for (const auto node_id : dependancy_free_nodes) {
@@ -147,13 +147,13 @@ void Workload::issue_dep_free_nodes() {
     }
     for (const auto node_id : dependancy_free_nodes_set) {
         std::shared_ptr<ETFeederNode> node = et_feeder->lookupNode(node_id);
-        std::fprintf(stderr,
-                     "[WORKLOAD] CHECK sys=%d tick=%llu node=%lu name=%s "
-                     "type=%d available=%d\n",
-                     sys->id, Sys::boostedTick(), node->id(),
-                     node->name().c_str(), static_cast<int>(node->type()),
-                     hw_resource->is_available(node));
-        std::fflush(stderr);
+        // std::fprintf(stderr,
+        //              "[WORKLOAD] CHECK sys=%d tick=%llu node=%lu name=%s "
+        //              "type=%d available=%d\n",
+        //              sys->id, Sys::boostedTick(), node->id(),
+        //              node->name().c_str(), static_cast<int>(node->type()),
+        //              hw_resource->is_available(node));
+        // std::fflush(stderr);
         if (hw_resource->is_available(node)) {
             issue(node);
         }
@@ -161,11 +161,11 @@ void Workload::issue_dep_free_nodes() {
 }
 
 void Workload::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
-    std::fprintf(stderr,
-                 "[WORKLOAD] ISSUE sys=%d tick=%llu node=%lu name=%s type=%d\n",
-                 sys->id, Sys::boostedTick(), node->id(), node->name().c_str(),
-                 static_cast<int>(node->type()));
-    std::fflush(stderr);
+    // std::fprintf(stderr,
+    //              "[WORKLOAD] ISSUE sys=%d tick=%llu node=%lu name=%s type=%d\n",
+    //              sys->id, Sys::boostedTick(), node->id(), node->name().c_str(),
+    //              static_cast<int>(node->type()));
+    // std::fflush(stderr);
     auto logger = LoggerFactory::get_logger("workload");
     if (sys->trace_enabled) {
         logger->debug("issue,sys->id={}, tick={}, node->id={}, "
@@ -302,9 +302,9 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
-    std::fprintf(stderr, "[WORKLOAD] COMM sys=%d tick=%llu node=%lu name=%s\n",
-                 sys->id, Sys::boostedTick(), node->id(), node->name().c_str());
-    std::fflush(stderr);
+    // std::fprintf(stderr, "[WORKLOAD] COMM sys=%d tick=%llu node=%lu name=%s\n",
+    //              sys->id, Sys::boostedTick(), node->id(), node->name().c_str());
+    // std::fflush(stderr);
     if (node->is_cpu_op<bool>(false)) {
         throw std::runtime_error("Comm node should not be on CPU");
     }
@@ -431,11 +431,11 @@ void Workload::issue_send_comm(
     sehd->wlhd->node_id = node->id();
     sehd->event = EventType::PacketSent;
 
-    std::fprintf(stderr,
-                 "[WORKLOAD] SEND sys=%d tick=%llu node=%lu src=%d dst=%d "
-                 "size=%lu tag=%d\n",
-                 sys->id, Sys::boostedTick(), node->id(), src, dst, size, tag);
-    std::fflush(stderr);
+    // std::fprintf(stderr,
+    //              "[WORKLOAD] SEND sys=%d tick=%llu node=%lu src=%d dst=%d "
+    //              "size=%lu tag=%d\n",
+    //              sys->id, Sys::boostedTick(), node->id(), src, dst, size, tag);
+    // std::fflush(stderr);
 
     sys->front_end_sim_send(0, Sys::dummy_data, size, UINT8, dst, tag, &snd_req,
                             Sys::FrontEndSendRecvType::NATIVE,
@@ -460,11 +460,11 @@ void Workload::issue_recv_comm(
     rcehd->wlhd->node_id = node->id();
     rcehd->workload = this;
     rcehd->event = EventType::PacketReceived;
-    std::fprintf(stderr,
-                 "[WORKLOAD] RECV sys=%d tick=%llu node=%lu src=%d dst=%d "
-                 "size=%lu tag=%d\n",
-                 sys->id, Sys::boostedTick(), node->id(), src, dst, size, tag);
-    std::fflush(stderr);
+    // std::fprintf(stderr,
+    //              "[WORKLOAD] RECV sys=%d tick=%llu node=%lu src=%d dst=%d "
+    //              "size=%lu tag=%d\n",
+    //              sys->id, Sys::boostedTick(), node->id(), src, dst, size, tag);
+    // std::fflush(stderr);
     sys->front_end_sim_recv(0, Sys::dummy_data, size, UINT8, src, tag, &rcv_req,
                             Sys::FrontEndSendRecvType::NATIVE,
                             &Sys::handleEvent, rcehd);
@@ -491,10 +491,10 @@ void Workload::call(EventType event, CallData* data) {
         return;
     }
 
-    std::fprintf(
-        stderr, "[WORKLOAD] CALLBACK sys=%d tick=%llu event=%d data_null=%d\n",
-        sys->id, Sys::boostedTick(), static_cast<int>(event), data == nullptr);
-    std::fflush(stderr);
+    // std::fprintf(
+    //     stderr, "[WORKLOAD] CALLBACK sys=%d tick=%llu event=%d data_null=%d\n",
+    //     sys->id, Sys::boostedTick(), static_cast<int>(event), data == nullptr);
+    // std::fflush(stderr);
 
     if (event == EventType::CollectiveCommunicationFinished) {
         IntData* int_data = (IntData*)data;

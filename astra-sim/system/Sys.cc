@@ -179,6 +179,9 @@ Sys::Sys(int id,
     this->comm_NI = comm_NI;
     this->comm_scale = comm_scale;
     this->rendezvous_enabled = rendezvous_enabled;
+    // std::printf(
+    //     "Sys %d: comm_scale = %f, rendezvous_enabled = %d\n", id, comm_scale,
+    //     rendezvous_enabled);
 
     this->scheduler_unit = nullptr;
     this->vLevels = nullptr;
@@ -318,7 +321,7 @@ Sys::~Sys() {
 }
 
 bool Sys::initialize_sys(string name) {
-    std::cout << "[system] Initializing AstraSim Sys with id " << id << "\n";
+    // std::cout << "[system] Initializing AstraSim Sys with id " << id << "\n";
     ifstream inFile;
     inFile.open(name);
     if (!inFile) {
@@ -468,9 +471,9 @@ void Sys::exit_sim_loop(string msg) {
 void Sys::call(EventType type, CallData* data) {}
 
 void Sys::call_events() {
-    std::cout << "[system] Sys " << id << " is calling events at tick "
-              << Sys::boostedTick()
-              << " with pending events: " << pending_events << "\n";
+    // std::cout << "[system] Sys " << id << " is calling events at tick "
+    //           << Sys::boostedTick()
+    //           << " with pending events: " << pending_events << "\n";
     for (auto& callable : event_queue[Sys::boostedTick()]) {
         try {
             pending_events--;
@@ -552,6 +555,8 @@ void Sys::handleEvent(void* arg) {
         delete mehd;
     } else if (event == EventType::PacketReceived) {
         RecvPacketEventHandlerData* rcehd = (RecvPacketEventHandlerData*)ehd;
+        // std::fprintf(stderr, "[System Callable] RECV callback stream id=%d",
+        //              rcehd->stream_id);
         if (rcehd->workload) {
             rcehd->workload->call(event, rcehd->wlhd);
         }
@@ -564,6 +569,8 @@ void Sys::handleEvent(void* arg) {
         delete rcehd;
     } else if (event == EventType::PacketSent) {
         SendPacketEventHandlerData* sehd = (SendPacketEventHandlerData*)ehd;
+        // std::fprintf(stderr, "[System Callable] SENT callback stream tag=%d",
+        //              sehd->tag);
         sehd->callable->call(EventType::PacketSent, sehd->wlhd);
         delete sehd;
     }
@@ -987,10 +994,12 @@ CollectivePhase Sys::generate_collective_phase(
     CollectiveImpl* collective_impl,
     CommunicatorGroup* comm_group) {
 
-    std::cout << "[system] Generating collective phase for collective type "
-              << comTypeToString(collective_type) << " with collective impl type "
-              << collectiveImplTypeToString(collective_impl->type) << " at queue id " << queue_id
-              << " with data size " << data_size << "\n";
+    // std::cout << "[system] Generating collective phase for collective type "
+    //           << comTypeToString(collective_type) << " with collective impl
+    //           type "
+    //           << collectiveImplTypeToString(collective_impl->type) << " at
+    //           queue id " << queue_id
+    //           << " with data size " << data_size << "\n";
 
     if (collective_impl->type == CollectiveImplType::Ring ||
         collective_impl->type == CollectiveImplType::OneRing) {
@@ -1044,8 +1053,8 @@ uint64_t Sys::determine_chunk_size(uint64_t& size, ComType type) {
         size = preferred_dataset_splits * chunk_size;
     }
 
-    std::cout << "[system] Determined chunk size: " << chunk_size
-              << " for collective type " << comTypeToString(type) << "\n";
+    // std::cout << "[system] Determined chunk size: " << chunk_size
+    //           << " for collective type " << comTypeToString(type) << "\n";
     return chunk_size;
 }
 
@@ -1147,9 +1156,9 @@ void Sys::insert_stream(list<BaseStream*>* queue, BaseStream* baseStream) {
         }
     }
     queue->insert(it, baseStream);
-    std::cout << "[system] Inserted stream into queue with id "
-              << baseStream->stream_id << " and total packets sent "
-              << baseStream->total_packets_sent << "\n";
+    // std::cout << "[system] Inserted stream into queue with id "
+    //           << baseStream->stream_id << " and total packets sent "
+    //           << baseStream->total_packets_sent << "\n";
 }
 
 void Sys::ask_for_schedule(int max) {
@@ -1176,9 +1185,10 @@ void Sys::ask_for_schedule(int max) {
         sys->schedule(min);
     }
 
-    std::cout << "[system] Asked for schedule for stream id " << top << " with "
-              << min << " streams scheduled in this round, ready list size: "
-              << ready_list.size() << "\n";
+    // std::cout << "[system] Asked for schedule for stream id " << top << "
+    // with "
+    //           << min << " streams scheduled in this round, ready list size: "
+    //           << ready_list.size() << "\n";
     return;
 }
 
@@ -1211,8 +1221,8 @@ void Sys::schedule(int num) {
         total_running_streams++;
     }
 
-    std::cout << "[system] Scheduled " << min(num, ready_list_size)
-              << " streams. Ready list size: " << ready_list.size() << "\n";
+    // std::cout << "[system] Scheduled " << min(num, ready_list_size)
+    //           << " streams. Ready list size: " << ready_list.size() << "\n";
 }
 
 void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
