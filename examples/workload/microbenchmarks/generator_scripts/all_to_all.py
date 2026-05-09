@@ -13,7 +13,7 @@ from extern.graph_frontend.chakra.schema.protobuf.et_def_pb2 import Node as Chak
 from extern.graph_frontend.chakra.src.third_party.utils.protolib import encodeMessage as encode_message
 
 
-def generate_all_to_all(npus_count: int, coll_size: int, path='./') -> None:
+def generate_all_to_all(npus_count: int, coll_size: int, path='./examples/workload/microbenchmarks/') -> None:
     """
     Generate All-to-All ET files.
     
@@ -72,7 +72,7 @@ def main():
     assert coll_size > 0
     
     # generate ET files
-    generate_all_to_all(npus_count=npus_count, coll_size=coll_size, path='./')
+    generate_all_to_all(npus_count=npus_count, coll_size=coll_size, path='./examples/workload/microbenchmarks/')
 
 
 if __name__ == '__main__':

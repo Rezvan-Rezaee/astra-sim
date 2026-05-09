@@ -1,5 +1,6 @@
 # Directory: rezvan_r@Rezvan:/mnt/c/Users/rezva/Documents/paradox/astra-sim$ 
-# Command: PYTHONPATH=$PWD python3 examples/workload/microbenchmarks/generator_scripts/all_to_all.py   --npus-count 256   --coll-size 1
+# Command: PYTHONPATH=$PWD python3 examples/workload/microbenchmarks/generator_scripts/all_reduce.py   --npus-count 256   --coll-size 1
+# PYTHONPATH=$PWD python3 /mnt/c/Users/rezva/Documents/paradox/astra-sim/examples/workload/microbenchmarks/generator_scripts/all_reduce.py --npus-count 64  --coll-size 1
 
 import argparse
 import os
@@ -9,7 +10,7 @@ from extern.graph_frontend.chakra.schema.protobuf.et_def_pb2 import Node as Chak
 from extern.graph_frontend.chakra.src.third_party.utils.protolib import encodeMessage as encode_message
 
 
-def generate_all_reduce(npus_count: int, coll_size: int, path='./') -> None:
+def generate_all_reduce(npus_count: int, coll_size: int, path='./examples/workload/microbenchmarks/') -> None:
     """
     Generate All-Reduce ET files.
     
@@ -68,7 +69,7 @@ def main():
     assert coll_size > 0
     
     # generate ET files
-    generate_all_reduce(npus_count=npus_count, coll_size=coll_size, path='./')
+    generate_all_reduce(npus_count=npus_count, coll_size=coll_size, path='./examples/workload/microbenchmarks/')
 
 
 if __name__ == '__main__':
