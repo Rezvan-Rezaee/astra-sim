@@ -169,13 +169,15 @@ int sc_main(int argc, char** argv) {
     constexpr bool rendezvous_enabled = false;
 
 #if defined(USE_DSS)
-    std::cout << "Using DSS switch model\n";
+    std::cout << "Using DSS switch model\n" << std::endl;
 #else
-    std::cout << "Using Hierarchical Crossbar switch model\n";
+    std::cout << "Using Hierarchical Crossbar switch model\n" << std::endl;
 #endif
 
     std::cout << "numPorts: " << numPorts << ", bytesPerCell: " << bytesPerCell
-              << "\n";
+              << ", communicationType: " << communicationTypeStr
+              << ", comm_scale: " << comm_scale << ", et_comm_scale: " << et_comm_scale
+              << std::endl;
 
     // ------------------------------------------------------------
     Packet::resetPacketID();
@@ -204,6 +206,7 @@ int sc_main(int argc, char** argv) {
 
     PacketGeneratorInterface packetGeneratorInterface(numPorts, bytesPerCell, 10);
     dut.setPacketGeneratorInterface(&packetGeneratorInterface);
+    packetGeneratorInterface.setVerbose(true);
 
     // ------------------------------------------------------------
     std::vector<std::unique_ptr<SystemCScheduler>> schedulers;
@@ -239,6 +242,7 @@ int sc_main(int argc, char** argv) {
         systems[i]->workload->fire();
     }
 
+    std::cout << "Starting SystemC simulation" << std::endl;
     sc_core::sc_start();
 
     for (int rank = 0; rank < static_cast<int>(numPorts); ++rank) {

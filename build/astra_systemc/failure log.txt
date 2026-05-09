@@ -1,0 +1,190 @@
+rezvan_r@Rezvan:/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc$ dmesg | tail -50
+[ 6668.635138] [   3550]  1000  3550     1050      396    49152        0             0 c++
+[ 6668.636281] [   3551]  1000  3551      724      396    45056        0             0 sh
+[ 6668.637438] [   3553]  1000  3553     1050      396    45056        0             0 c++
+[ 6668.638528] [   3555]  1000  3555    96513    69662   802816    16148             0 cc1plus
+[ 6668.639359] [   3556]  1000  3556      724      352    49152        0             0 sh
+[ 6668.640234] [   3558]  1000  3558     1050      440    49152        0             0 c++
+[ 6668.641400] [   3560]  1000  3560    79977    51286   679936    18832             0 cc1plus
+[ 6668.642204] [   3561]  1000  3561      724      396    49152        0             0 sh
+[ 6668.643008] [   3563]  1000  3563     1050      396    45056        0             0 c++
+[ 6668.643877] [   3567]  1000  3567      724      352    49152        0             0 sh
+[ 6668.645202] [   3569]  1000  3569     1050      440    49152        0             0 c++
+[ 6668.646721] [   3571]  1000  3571      724      308    49152        0             0 sh
+[ 6668.647425] [   3572]  1000  3572    87229    62479   741376    15400             0 cc1plus
+[ 6668.648635] [   3574]  1000  3574    83703    54109   708608    20064             0 cc1plus
+[ 6668.649402] [   3577]  1000  3577     1050      396    45056        0             0 c++
+[ 6668.650100] [   3581]  1000  3581    80038    55404   684032    14828             0 cc1plus
+[ 6668.650978] [   3582]  1000  3582   104774    77743   876544    16984             0 cc1plus
+[ 6668.651825] [   3618]  1000  3618      724      308    45056        0             0 sh
+[ 6668.653011] [   3619]  1000  3619     1050      396    49152        0             0 c++
+[ 6668.653992] [   3620]  1000  3620      724      352    49152        0             0 sh
+[ 6668.654859] [   3621]  1000  3621     1050      396    45056        0             0 c++
+[ 6668.655767] [   3622]  1000  3622      724      352    49152        0             0 sh
+[ 6668.657357] [   3623]  1000  3623    80388    52132   684032    18260             0 cc1plus
+[ 6668.658427] [   3624]  1000  3624      724      352    49152        0             0 sh
+[ 6668.659281] [   3625]  1000  3625     1050      396    49152        0             0 c++
+[ 6668.662014] [   3626]  1000  3626      724      352    45056        0             0 sh
+[ 6668.663453] [   3627]  1000  3627     1050      440    53248        0             0 c++
+[ 6668.665712] [   3628]  1000  3628    86467    58354   720896    17556             0 cc1plus
+[ 6668.666635] [   3629]  1000  3629     1050      396    45056        0             0 c++
+[ 6668.667449] [   3631]  1000  3631    80011    53245   679936    16896             0 cc1plus
+[ 6668.668599] [   3632]  1000  3632    80431    55650   684032    14960             0 cc1plus
+[ 6668.669554] [   3634]  1000  3634    80381    57282   679936    13200             0 cc1plus
+[ 6668.670333] [   3648]  1000  3648      724      352    49152        0             0 sh
+[ 6668.671075] [   3649]  1000  3649     1050      396    49152        0             0 c++
+[ 6668.671984] [   3650]  1000  3650   107216    88431   901120     8800             0 cc1plus
+[ 6668.673315] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=/,mems_allowed=0,global_oom,task_memcg=/,task=cc1plus,pid=3489,uid=1000
+[ 6668.674900] Out of memory: Killed process 3489 (cc1plus) total-vm:468764kB, anon-rss:373504kB, file-rss:880kB, shmem-rss:0kB, UID:1000 pgtables:956kB oom_score_adj:0
+[ 6712.557922] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 6712.604448] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 6816.600894] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 6878.795901] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 6878.806932] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 6878.817969] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 6878.836422] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 6880.032635] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 6975.175147] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 6975.243614] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 7013.928352] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 7019.171489] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+[ 7019.269671] WSL (1 - init(Ubuntu)) WARNING: /etc/resolv.conf updating disabled in /etc/wsl.conf
+
+*******************************************************************************************************************************************************************************
+=================================================================
+==4428==ERROR: AddressSanitizer: stack-use-after-scope on address 0x7b4e858c99a0 at pc 0x58169f956e26 bp 0x7b4e858c9780 sp 0x7b4e858c9770
+READ of size 8 at 0x7b4e858c99a0 thread T0
+    #0 0x58169f956e25 in Packet::Packet(Packet const&) /mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/../../../ParaDOX/cpp/systemC/../inc/Packet.h:17
+    #1 0x58169fd25e23 in ScSwitchBox::arbitrate() /mnt/c/Users/rezva/Documents/paradox/ParaDOX/cpp/systemC/src/ScSwitchBox.cpp:280
+    #2 0x58169fd24960 in ScSwitchBox::routingProcess() /mnt/c/Users/rezva/Documents/paradox/ParaDOX/cpp/systemC/src/ScSwitchBox.cpp:173
+    #3 0x7b4ea236171b in sc_core::sc_thread_cor_fn(void*) (/home/rezvan_r/systemc-install/lib/libsystemc.so.3.0+0x13071b)
+    #4 0x7b4ea23a060a  (/home/rezvan_r/systemc-install/lib/libsystemc.so.3.0+0x16f60a)
+
+Address 0x7b4e858c99a0 is located in stack of thread T0 at offset 432 in frame
+    #0 0x58169fd2511f in ScSwitchBox::arbitrate() /mnt/c/Users/rezva/Documents/paradox/ParaDOX/cpp/systemC/src/ScSwitchBox.cpp:202
+
+  This frame has 7 object(s):
+    [32, 40) '__for_begin' (line 208)
+    [64, 72) '__for_end' (line 208)
+    [96, 112) 'routeResult' (line 270)
+    [128, 152) 'order' (line 205)
+    [192, 272) '<unknown>'
+    [304, 384) 'routedPkt' (line 280)
+    [416, 504) '<unknown>' <== Memory access at offset 432 is inside this variable
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-use-after-scope /mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/../../../ParaDOX/cpp/systemC/../inc/Packet.h:17 in Packet::Packet(Packet const&)
+Shadow bytes around the buggy address:
+  0x0f6a50b112e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0f6a50b112f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1
+  0x0f6a50b11300: f1 f1 00 f2 f2 f2 00 f2 f2 f2 00 00 f2 f2 00 00
+  0x0f6a50b11310: 00 f2 f2 f2 f2 f2 00 00 00 00 00 00 00 00 00 00
+  0x0f6a50b11320: f2 f2 f2 f2 00 00 00 00 00 00 00 00 00 00 f2 f2
+=>0x0f6a50b11330: f2 f2 f8 f8[f8]f8 f8 f8 f8 f8 f8 f8 f8 f3 f3 f3
+  0x0f6a50b11340: f3 f3 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0f6a50b11350: 00 00 f1 f1 f1 f1 f8 f2 f8 f2 f8 f2 f8 f2 00 f2
+  0x0f6a50b11360: f2 f2 f8 f2 f2 f2 f8 f2 f2 f2 f8 f8 f8 f2 f2 f2
+  0x0f6a50b11370: f2 f2 00 00 00 00 f2 f2 f2 f2 f8 f8 f8 f8 f2 f2
+  0x0f6a50b11380: f2 f2 f8 f8 f8 f8 f2 f2 f2 f2 00 00 00 00 f2 f2
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==4428==ABORTING
+
+*******************************************************************************************************************************************************************************
+=================================================================
+==5982==ERROR: AddressSanitizer: heap-use-after-free on address 0x508000193b70 at pc 0x584bfac58aa5 bp 0x7e26ac9c9b00 sp 0x7e26ac9c9af0
+WRITE of size 8 at 0x508000193b70 thread T0
+    #0 0x584bfac58aa4 in AstraSim::PacketBundle::call(AstraSim::EventType, AstraSim::CallData*) /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/PacketBundle.cc:68
+    #1 0x584bfa980d4a in AstraSim::Sys::call_events() /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/Sys.cc:480
+    #2 0x584bfa981e1c in AstraSim::Sys::handleEvent(void*) /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/Sys.cc:535
+    #3 0x584bfacf71fb in SystemCScheduler::run() /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/network_frontend/myNetworkAPI/SystemCScheduler.cpp:39
+    #4 0x7e26b1b6171b in sc_core::sc_thread_cor_fn(void*) (/home/rezvan_r/systemc-install/lib/libsystemc.so.3.0+0x13071b)
+    #5 0x7e26b1ba060a  (/home/rezvan_r/systemc-install/lib/libsystemc.so.3.0+0x16f60a)
+
+0x508000193b70 is located 80 bytes inside of 88-byte region [0x508000193b20,0x508000193b78)
+freed by thread T0 here:
+    #0 0x7e26b20b724f in operator delete(void*, unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:172
+    #1 0x584bfaa562eb in __gnu_cxx::new_allocator<std::_List_node<AstraSim::MyPacket> >::deallocate(std::_List_node<AstraSim::MyPacket>*, unsigned long) /usr/include/c++/11/ext/new_allocator.h:145
+    #2 0x584bfaa5622f in std::allocator_traits<std::allocator<std::_List_node<AstraSim::MyPacket> > >::deallocate(std::allocator<std::_List_node<AstraSim::MyPacket> >&, std::_List_node<AstraSim::MyPacket>*, unsigned long) /usr/include/c++/11/bits/alloc_traits.h:496
+    #3 0x584bfaa560d5 in std::__cxx11::_List_base<AstraSim::MyPacket, std::allocator<AstraSim::MyPacket> >::_M_put_node(std::_List_node<AstraSim::MyPacket>*) /usr/include/c++/11/bits/stl_list.h:447
+    #4 0x584bfaa619b7 in std::__cxx11::list<AstraSim::MyPacket, std::allocator<AstraSim::MyPacket> >::_M_erase(std::_List_iterator<AstraSim::MyPacket>) (/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/build/bin/AstraSim_SystemC+0x2639b7)
+    #5 0x584bfaa60d11 in std::__cxx11::list<AstraSim::MyPacket, std::allocator<AstraSim::MyPacket> >::pop_front() (/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/build/bin/AstraSim_SystemC+0x262d11)
+    #6 0x584bfaa65b41 in AstraSim::Ring::reduce() /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/astraccl/native_collectives/collective_algorithm/Ring.cc:157
+    #7 0x584bfaa67588 in AstraSim::Ring::ready() /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/astraccl/native_collectives/collective_algorithm/Ring.cc:245
+    #8 0x584bfaa54ba0 in AstraSim::AllToAll::run(AstraSim::EventType, AstraSim::CallData*) /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/astraccl/native_collectives/collective_algorithm/AllToAll.cc:38
+    #9 0x584bfac6476d in AstraSim::StreamBaseline::call(AstraSim::EventType, AstraSim::CallData*) /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/StreamBaseline.cc:44
+    #10 0x584bfac58b99 in AstraSim::PacketBundle::call(AstraSim::EventType, AstraSim::CallData*) /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/PacketBundle.cc:70
+    #11 0x584bfa980d4a in AstraSim::Sys::call_events() /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/Sys.cc:480
+    #12 0x584bfa981e1c in AstraSim::Sys::handleEvent(void*) /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/Sys.cc:535
+    #13 0x584bfacf71fb in SystemCScheduler::run() /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/network_frontend/myNetworkAPI/SystemCScheduler.cpp:39
+    #14 0x7e26b1b6171b in sc_core::sc_thread_cor_fn(void*) (/home/rezvan_r/systemc-install/lib/libsystemc.so.3.0+0x13071b)
+
+previously allocated by thread T0 here:
+    #0 0x7e26b20b61e7 in operator new(unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:99
+    #1 0x584bfaa63791 in __gnu_cxx::new_allocator<std::_List_node<AstraSim::MyPacket> >::allocate(unsigned long, void const*) (/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/build/bin/AstraSim_SystemC+0x265791)
+    #2 0x584bfaa630e9 in std::allocator_traits<std::allocator<std::_List_node<AstraSim::MyPacket> > >::allocate(std::allocator<std::_List_node<AstraSim::MyPacket> >&, unsigned long) (/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/build/bin/AstraSim_SystemC+0x2650e9)
+    #3 0x584bfaa62b3c in std::__cxx11::_List_base<AstraSim::MyPacket, std::allocator<AstraSim::MyPacket> >::_M_get_node() (/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/build/bin/AstraSim_SystemC+0x264b3c)
+    #4 0x584bfaa6243f in std::_List_node<AstraSim::MyPacket>* std::__cxx11::list<AstraSim::MyPacket, std::allocator<AstraSim::MyPacket> >::_M_create_node<AstraSim::MyPacket>(AstraSim::MyPacket&&) (/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/build/bin/AstraSim_SystemC+0x26443f)
+    #5 0x584bfaa61d5b in void std::__cxx11::list<AstraSim::MyPacket, std::allocator<AstraSim::MyPacket> >::_M_insert<AstraSim::MyPacket>(std::_List_iterator<AstraSim::MyPacket>, AstraSim::MyPacket&&) (/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/build/bin/AstraSim_SystemC+0x263d5b)
+    #6 0x584bfaa60d5a in std::__cxx11::list<AstraSim::MyPacket, std::allocator<AstraSim::MyPacket> >::push_back(AstraSim::MyPacket&&) (/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/build/bin/AstraSim_SystemC+0x262d5a)
+    #7 0x584bfaa6654f in AstraSim::Ring::insert_packet(AstraSim::Callable*) /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/astraccl/native_collectives/collective_algorithm/Ring.cc:191
+    #8 0x584bfaa54c71 in AstraSim::AllToAll::run(AstraSim::EventType, AstraSim::CallData*) /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/astraccl/native_collectives/collective_algorithm/AllToAll.cc:48
+    #9 0x584bfac6491e in AstraSim::StreamBaseline::consume(AstraSim::RecvPacketEventHandlerData*) /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/StreamBaseline.cc:54
+    #10 0x584bfa9821a3 in AstraSim::Sys::handleEvent(void*) /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/Sys.cc:564
+    #11 0x584bfad64b33 in PacketGeneratorInterface::notify_message_complete(unsigned long) /mnt/c/Users/rezva/Documents/paradox/ParaDOX/cpp/systemC/src/PacketGeneratorInterface.cpp:383
+    #12 0x584bfad62a43 in PacketGeneratorInterface::receivePacketVector(std::vector<Packet, std::allocator<Packet> > const&) /mnt/c/Users/rezva/Documents/paradox/ParaDOX/cpp/systemC/src/PacketGeneratorInterface.cpp:199
+    #13 0x584bfacffa44 in ScSwitchDSS::routingProcess() /mnt/c/Users/rezva/Documents/paradox/ParaDOX/cpp/systemC/src/ScSwitchDSS.cpp:342
+    #14 0x7e26b1b6171b in sc_core::sc_thread_cor_fn(void*) (/home/rezvan_r/systemc-install/lib/libsystemc.so.3.0+0x13071b)
+
+SUMMARY: AddressSanitizer: heap-use-after-free /mnt/c/Users/rezva/Documents/paradox/astra-sim/astra-sim/system/PacketBundle.cc:68 in AstraSim::PacketBundle::call(AstraSim::EventType, AstraSim::CallData*)
+Shadow bytes around the buggy address:
+  0x0a108002a710: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 fa
+  0x0a108002a720: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 fa
+  0x0a108002a730: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 fa
+  0x0a108002a740: fa fa fa fa fd fd fd fd fd fd fd fd fd fd fd fa
+  0x0a108002a750: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 fa
+=>0x0a108002a760: fa fa fa fa fd fd fd fd fd fd fd fd fd fd[fd]fa
+  0x0a108002a770: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 fa
+  0x0a108002a780: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 fa
+  0x0a108002a790: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 fa
+  0x0a108002a7a0: fa fa fa fa fd fd fd fd fd fd fd fd fd fd fd fa
+  0x0a108002a7b0: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==5982==ABORTING

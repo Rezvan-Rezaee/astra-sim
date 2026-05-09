@@ -8,6 +8,14 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
+################## add if runnung with build_flags.sh
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+
+if(ENABLE_ASAN)
+    add_compile_options(-g -O0 -fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+endif()
+######################################################
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/systemc_import.cmake)
 
