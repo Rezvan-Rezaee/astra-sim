@@ -10,6 +10,9 @@
 #include "PacketGeneratorInterface.h"
 #include "SystemCScheduler.h"
 
+// Reuse analytical frontend callback-matching helpers.
+#include "common/CallbackTracker.hh"
+
 class PacketGeneratorInterface;
 
 namespace AstraSim {
@@ -57,6 +60,19 @@ class MyNetworkAPI : public AstraNetworkAPI {
     virtual void sim_notify_finished();
 
   private:
+    struct MessageCompletionInfo {
+        int tag;
+        int src;
+        int dst;
+        uint64_t count;
+        int chunk_id;
+    };
+
+    static AstraSimAnalytical::ChunkIdGenerator chunk_id_generator;
+    static AstraSimAnalytical::CallbackTracker callback_tracker;
+
+    static void process_message_arrival(void* args);
+    
     PacketGeneratorInterface* packetGenerator = nullptr;
     SystemCScheduler* scheduler = nullptr;
     bool simulation_finished = false;

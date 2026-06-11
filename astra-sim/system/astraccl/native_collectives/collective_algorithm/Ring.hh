@@ -11,6 +11,8 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/astraccl/Algorithm.hh"
 #include "astra-sim/system/astraccl/native_collectives/logical_topology/RingTopology.hh"
 
+#include <memory>
+
 namespace AstraSim {
 
 class Ring : public Algorithm {
@@ -47,13 +49,13 @@ class Ring : public Algorithm {
     int remained_packets_per_message;
     int parallel_reduce;
     InjectionPolicy injection_policy;
-    std::list<MyPacket> packets;
+    std::list<std::shared_ptr<MyPacket>> packets;
     bool toggle;
     long free_packets;
     long total_packets_sent;
     long total_packets_received;
     uint64_t msg_size;
-    std::list<MyPacket*> locked_packets;
+    std::list<std::shared_ptr<MyPacket>> locked_packets;
     bool processed;
     bool send_back;
     bool NPU_to_MA;

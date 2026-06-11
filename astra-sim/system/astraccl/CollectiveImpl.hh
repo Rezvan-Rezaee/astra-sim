@@ -68,6 +68,7 @@ class CollectiveImpl {
     CollectiveImpl(CollectiveImplType type) {
         this->type = type;
     };
+    virtual ~CollectiveImpl() = default;
 
     CollectiveImplType type;
 };

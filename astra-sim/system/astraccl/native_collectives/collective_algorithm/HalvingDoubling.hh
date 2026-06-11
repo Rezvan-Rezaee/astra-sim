@@ -7,6 +7,7 @@ LICENSE file in the root directory of this source tree.
 #define __HALVING_DOUBLING_HH__
 
 #include <list>
+#include <memory>
 
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/MyPacket.hh"
@@ -48,13 +49,13 @@ class HalvingDoubling : public Algorithm {
     int parallel_reduce;
     PacketRouting routing;
     InjectionPolicy injection_policy;
-    std::list<MyPacket> packets;
+    std::list<std::shared_ptr<MyPacket>> packets;
     bool toggle;
     long free_packets;
     long total_packets_sent;
     long total_packets_received;
     uint64_t msg_size;
-    std::list<MyPacket*> locked_packets;
+    std::list<std::shared_ptr<MyPacket>> locked_packets;
     bool processed;
     bool send_back;
     bool NPU_to_MA;

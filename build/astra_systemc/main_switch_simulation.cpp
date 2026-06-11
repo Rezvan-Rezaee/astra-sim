@@ -12,6 +12,7 @@
 // Astra-sim
 #include "astra-sim/common/AstraNetworkAPI.hh"
 #include "astra-sim/common/AstraRemoteMemoryAPI.hh"
+#include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/Sys.hh"
 #include "extern/remote_memory_backend/analytical/AnalyticalRemoteMemory.hh"
 
@@ -37,8 +38,26 @@
 
 #include "SystemCScheduler.h"
 
+// Use the slow (platform) unwinder so that frames from pre-compiled shared
+// libraries (libsystemc, libprotobuf) appear in LeakSanitizer backtraces.
+// Without this, the fast unwinder stops after 2 frames and LSan never sees
+// the library name, so the suppression rules below have nothing to match.
+extern "C" const char* __asan_default_options() {
+    return "fast_unwind_on_malloc=0";
+}
+
+// Load LSan suppressions automatically so neither LSAN_OPTIONS nor a wrapper
+// script is needed. Suppresses known-benign leaks from libsystemc and protobuf
+// global singletons that outlive LeakSanitizer's exit-time scan.
+extern "C" const char* __lsan_default_options() {
+    return "suppressions=/mnt/c/Users/rezva/Documents/paradox/astra-sim"
+           "/build/astra_systemc/lsan_suppressions.txt";
+}
+
 enum class SwitchType { paradox = 0, hierXbar };
 #define USE_DSS
+// #define USE_HIERXBAR
+// #define XBAR
 
 static size_t parseUnsignedArg(const char* arg, const std::string& name) {
     try {
@@ -88,8 +107,8 @@ static double parseDoubleArg(const char* arg, const std::string& name) {
 
         return value;
     } catch (const std::exception& e) {
-        std::cerr << "Invalid " << name << ": " << arg
-                  << " (" << e.what() << ")" << std::endl;
+        std::cerr << "Invalid " << name << ": " << arg << " (" << e.what()
+                  << ")" << std::endl;
         std::exit(1);
     }
 }
@@ -106,11 +125,14 @@ int sc_main(int argc, char** argv) {
     if (argc != 5) {
         ASSERT_PRINT(
             false,
-            "Usage: %s <num_ports> <bytes_per_cell> <collective_communication_type> <communication_scale>\n"
+            "Usage: %s <num_ports> <bytes_per_cell> "
+            "<collective_communication_type> <communication_scale>\n"
             "  num_ports: Number of switch ports (e.g., 4, 8, 16)\n"
             "  bytes_per_cell: Number of bytes per cell (e.g., 64, 128)\n"
-            "  collective_communication_type: Type of collective communication (0 for all_reduce, 1 for all_gather, 2 for all_to_all)\n"
-            "  communication_scale: Scale factor for communication (e.g., 1.0, 2.0)\n",
+            "  collective_communication_type: Type of collective communication "
+            "(0 for all_reduce, 1 for all_gather, 2 for all_to_all)\n"
+            "  communication_scale: Scale factor for communication (e.g., 1.0, "
+            "2.0)\n",
             // "  switch_type: Type of switch to simulate (0 for paradox, "
             // "1 for hierXbar)\n",
             argv[0]);
@@ -119,32 +141,42 @@ int sc_main(int argc, char** argv) {
     // const int switchTypeInt = parseUnsignedArg(argv[1], "switch_type");
     const size_t numPorts = parseUnsignedArg(argv[1], "num_ports");
     const size_t bytesPerCell = parseUnsignedArg(argv[2], "bytes_per_cell");
-    const size_t communicationType = parseUnsignedArg(argv[3], "collective_communication_type");
-    const double comm_scale = parseDoubleArg(argv[4], "communication_scale");  // times workload size by this factor (1 MiB workload default)
+    const size_t communicationType =
+        parseUnsignedArg(argv[3], "collective_communication_type");
+    const double comm_scale = parseDoubleArg(
+        argv[4], "communication_scale");  // times workload size by this factor
+                                          // (1 MiB workload default)
     const size_t et_comm_scale = parseUnsignedArg(argv[4], "et scale");
-    
+
     std::string communicationTypeStr;
     switch (communicationType) {
-        case 0:
-            communicationTypeStr = "all_reduce";
-            break;
-        case 1:
-            communicationTypeStr = "all_gather";
-            break;
-        case 2:
-            communicationTypeStr = "all_to_all";
-            break;
-        default:
-            std::cerr << "Invalid collective communication type: " << communicationType
-                      << ". Valid values are 0 (all_reduce), 1 (all_gather), and 2 (all_to_all)." << std::endl;
-            return 1;
+    case 0:
+        communicationTypeStr = "all_reduce";
+        break;
+    case 1:
+        communicationTypeStr = "all_gather";
+        break;
+    case 2:
+        communicationTypeStr = "all_to_all";
+        break;
+    default:
+        std::cerr << "Invalid collective communication type: "
+                  << communicationType
+                  << ". Valid values are 0 (all_reduce), 1 (all_gather), and 2 "
+                     "(all_to_all)."
+                  << std::endl;
+        return 1;
     }
+
+    AstraSim::LoggerFactory::init("empty", "loggerlog");
 
     std::cout << "Starting SystemC AstraSim Simulation\n";
 
-    std::string workloadDir = "/mnt/c/Users/rezva/Documents/paradox/astra-sim/"
-                              "examples/workload/microbenchmarks/" + communicationTypeStr + "/" +
-                              std::to_string(numPorts) + "npus_" + std::to_string(et_comm_scale) + "MB/" + communicationTypeStr;
+    std::string workloadDir =
+        "/mnt/c/Users/rezva/Documents/paradox/astra-sim/"
+        "examples/workload/microbenchmarks/" +
+        communicationTypeStr + "/" + std::to_string(numPorts) + "npus_" +
+        std::to_string(et_comm_scale) + "MB/" + communicationTypeStr;
     const std::string workload_config = workloadDir;
 
     const std::string system_config =
@@ -170,14 +202,16 @@ int sc_main(int argc, char** argv) {
 
 #if defined(USE_DSS)
     std::cout << "Using DSS switch model\n" << std::endl;
-#else
+#elif defined(USE_HIERXBAR)
     std::cout << "Using Hierarchical Crossbar switch model\n" << std::endl;
+#elif defined(XBAR)
+    std::cout << "Using Crossbar switch model\n" << std::endl;
 #endif
 
     std::cout << "numPorts: " << numPorts << ", bytesPerCell: " << bytesPerCell
               << ", communicationType: " << communicationTypeStr
-              << ", comm_scale: " << comm_scale << ", et_comm_scale: " << et_comm_scale
-              << std::endl;
+              << ", comm_scale: " << comm_scale
+              << ", et_comm_scale: " << et_comm_scale << std::endl;
 
     // ------------------------------------------------------------
     Packet::resetPacketID();
@@ -188,25 +222,35 @@ int sc_main(int argc, char** argv) {
     const auto t0 = std::chrono::steady_clock::now();
 
     ScPacketGen packetGen(numPorts, 50);
+    packetGen.setHasPayload(true);
+    packetGen.setPacketLength(10);
 
 #if defined(USE_DSS)
     SwitchDSS swParadox(numPorts, "DSS", 1200000);
     ScSwitchDSS dut("paradox", swParadox, packetGen, 3);
     // dut.enableDebug(swParams.debugEnabled);
-#else
+#elif defined(USE_HIERXBAR)
     SwitchHierXbar swHierXbar(numPorts, 1200000, "HierXbar");
     ScSwitchHierXbar dut("hierXbar", swHierXbar, packetGen, 3);
+#elif defined(XBAR)
+    SwitchCrossbar swCrossbar(numPorts);
+    ScSwitchBox dut("xbar", swCrossbar, 1200000, ArbiterType::roundRobin,
+                    nullptr, 3, &packetGen);
 #endif
 
+#if defined(XBAR)
+    dut.setPayloadEnabled(true);
+#else
     dut.setPayloadEnabledAll(true);
-
+#endif
     dut.setStatisticsParameters(20, 40);
     dut.setCycleStatsEnabled(true);
     dut.setActiveCycles(2000000);
 
-    PacketGeneratorInterface packetGeneratorInterface(numPorts, bytesPerCell, 10);
+    PacketGeneratorInterface packetGeneratorInterface(numPorts, bytesPerCell,
+                                                      10);
     dut.setPacketGeneratorInterface(&packetGeneratorInterface);
-    packetGeneratorInterface.setVerbose(true);
+    packetGeneratorInterface.setVerbose(false);
 
     // ------------------------------------------------------------
     std::vector<std::unique_ptr<SystemCScheduler>> schedulers;
@@ -229,6 +273,8 @@ int sc_main(int argc, char** argv) {
             remote_memory_configuration);
 
     std::vector<std::unique_ptr<AstraSim::Sys>> systems;
+    comm_scale = 1;  // based on my understanding this has zero effect in the
+                     // simulation and is a member variable that is never used
     systems.reserve(static_cast<int>(numPorts));
     for (int rank = 0; rank < static_cast<int>(numPorts); ++rank) {
         systems.emplace_back(std::make_unique<AstraSim::Sys>(
@@ -256,8 +302,10 @@ int sc_main(int argc, char** argv) {
 
 #if defined(USE_DSS)
     dut.printSimulationResults_dss();
-#else
+#elif defined(USE_HIERXBAR)
     dut.printSimulationResults_HierXbar();
+#elif defined(XBAR)
+    dut.printSimulationResults();
 #endif
     dut.printStats();
 
@@ -266,5 +314,15 @@ int sc_main(int argc, char** argv) {
 
     std::cout << ", " << elapsed.count() << "\n";
 
+    // Destroy simulation objects while spdlog is still alive so their
+    // destructors (e.g. Sys::~Sys -> exit_sim_loop) can log normally.
+    // Calling LoggerFactory::shutdown() first would cause ~Sys() to
+    // re-create a new spdlog thread pool after teardown, leaking its
+    // internal heap strings (detected by LeakSanitizer).
+    systems.clear();
+    network_apis.clear();
+    schedulers.clear();
+
+    AstraSim::LoggerFactory::shutdown();
     return 0;
 }

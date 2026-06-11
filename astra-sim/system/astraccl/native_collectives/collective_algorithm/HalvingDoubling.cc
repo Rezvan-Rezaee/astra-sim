@@ -123,12 +123,14 @@ void HalvingDoubling::release_packets() {
         packet->set_notifier(this);
     }
     if (NPU_to_MA == true) {
-        (new PacketBundle(stream->owner, stream, locked_packets, processed,
-                          send_back, msg_size, transmition))
+        std::make_shared<PacketBundle>(stream->owner, stream, locked_packets,
+                                       processed, send_back, msg_size,
+                                       transmition)
             ->send_to_MA();
     } else {
-        (new PacketBundle(stream->owner, stream, locked_packets, processed,
-                          send_back, msg_size, transmition))
+        std::make_shared<PacketBundle>(stream->owner, stream, locked_packets,
+                                       processed, send_back, msg_size,
+                                       transmition)
             ->send_to_NPU();
     }
     locked_packets.clear();
@@ -201,11 +203,12 @@ void HalvingDoubling::insert_packet(Callable* sender) {
         toggle = !toggle;
     }
     if (zero_latency_packets > 0) {
-        packets.push_back(MyPacket(
+        auto packet = std::make_shared<MyPacket>(
             msg_size, stream->current_queue_id, curr_sender,
-            curr_receiver));  // vnet Must be changed for alltoall topology
-        packets.back().sender = sender;
-        locked_packets.push_back(&packets.back());
+            curr_receiver);  // vnet Must be changed for alltoall topology
+        packet->sender = sender;
+        packets.push_back(packet);
+        locked_packets.push_back(packet);
         processed = false;
         send_back = false;
         NPU_to_MA = true;
@@ -213,11 +216,12 @@ void HalvingDoubling::insert_packet(Callable* sender) {
         zero_latency_packets--;
         return;
     } else if (non_zero_latency_packets > 0) {
-        packets.push_back(MyPacket(
+        auto packet = std::make_shared<MyPacket>(
             msg_size, stream->current_queue_id, curr_sender,
-            curr_receiver));  // vnet Must be changed for alltoall topology
-        packets.back().sender = sender;
-        locked_packets.push_back(&packets.back());
+            curr_receiver);  // vnet Must be changed for alltoall topology
+        packet->sender = sender;
+        packets.push_back(packet);
+        locked_packets.push_back(packet);
         if (comType == ComType::Reduce_Scatter ||
             (comType == ComType::All_Reduce && toggle)) {
             processed = true;
@@ -245,25 +249,25 @@ bool HalvingDoubling::ready() {
     if (packets.size() == 0 || stream_count == 0 || free_packets == 0) {
         return false;
     }
-    MyPacket packet = packets.front();
+    auto packet = packets.front();
     sim_request snd_req;
     snd_req.srcRank = id;
-    snd_req.dstRank = packet.preferred_dest;
+    snd_req.dstRank = packet->preferred_dest;
     snd_req.tag = stream->stream_id;
     snd_req.reqType = UINT8;
     snd_req.vnet = this->stream->current_queue_id;
     stream->owner->front_end_sim_send(
-        0, Sys::dummy_data, packet.msg_size, UINT8, packet.preferred_dest,
+        0, Sys::dummy_data, packet->msg_size, UINT8, packet->preferred_dest,
         stream->stream_id, &snd_req, Sys::FrontEndSendRecvType::COLLECTIVE,
         &Sys::handleEvent,
-        nullptr);  // stream_id+(packet.preferred_dest*50)
+        nullptr);  // stream_id+(packet->preferred_dest*50)
     sim_request rcv_req;
     rcv_req.vnet = this->stream->current_queue_id;
     RecvPacketEventHandlerData* ehd = new RecvPacketEventHandlerData(
         stream, stream->owner->id, EventType::PacketReceived,
-        packet.preferred_vnet, packet.stream_id);
+        packet->preferred_vnet, packet->stream_id);
     stream->owner->front_end_sim_recv(
-        0, Sys::dummy_data, packet.msg_size, UINT8, packet.preferred_src,
+        0, Sys::dummy_data, packet->msg_size, UINT8, packet->preferred_src,
         stream->stream_id, &rcv_req, Sys::FrontEndSendRecvType::COLLECTIVE,
         &Sys::handleEvent,
         ehd);  // stream_id+(owner->id*50)

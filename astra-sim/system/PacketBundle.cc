@@ -9,7 +9,7 @@ using namespace AstraSim;
 
 PacketBundle::PacketBundle(Sys* sys,
                            BaseStream* stream,
-                           std::list<MyPacket*> locked_packets,
+                           std::list<std::shared_ptr<MyPacket>> locked_packets,
                            bool needs_processing,
                            bool send_back,
                            uint64_t size,
@@ -40,11 +40,13 @@ PacketBundle::PacketBundle(Sys* sys,
 }
 
 void PacketBundle::send_to_MA() {
+    self_ref = shared_from_this();
     sys->memBus->send_from_NPU_to_MA(transmition, size, needs_processing,
                                      send_back, this);
 }
 
 void PacketBundle::send_to_NPU() {
+    self_ref = shared_from_this();
     sys->memBus->send_from_MA_to_NPU(transmition, size, needs_processing,
                                      send_back, this);
 }
@@ -68,5 +70,5 @@ void PacketBundle::call(EventType event, CallData* data) {
         packet->ready_time = current;
     }
     stream->call(EventType::General, data);
-    delete this;
+    self_ref.reset();
 }

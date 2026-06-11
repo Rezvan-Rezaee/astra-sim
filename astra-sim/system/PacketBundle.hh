@@ -6,6 +6,8 @@ LICENSE file in the root directory of this source tree.
 #ifndef __PACKET_BUNDLE_HH__
 #define __PACKET_BUNDLE_HH__
 
+#include <memory>
+
 #include "astra-sim/system/BaseStream.hh"
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/Common.hh"
@@ -15,11 +17,12 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class Sys;
-class PacketBundle : public Callable {
+class PacketBundle : public Callable,
+                     public std::enable_shared_from_this<PacketBundle> {
   public:
     PacketBundle(Sys* sys,
                  BaseStream* stream,
-                 std::list<MyPacket*> locked_packets,
+                 std::list<std::shared_ptr<MyPacket>> locked_packets,
                  bool needs_processing,
                  bool send_back,
                  uint64_t size,
@@ -35,7 +38,7 @@ class PacketBundle : public Callable {
     void call(EventType event, CallData* data);
 
     Sys* sys;
-    std::list<MyPacket*> locked_packets;
+    std::list<std::shared_ptr<MyPacket>> locked_packets;
     bool needs_processing;
     bool send_back;
     uint64_t size;
@@ -43,6 +46,9 @@ class PacketBundle : public Callable {
     MemBus::Transmition transmition;
     Tick delay;
     Tick creation_time;
+
+  private:
+    std::shared_ptr<PacketBundle> self_ref;
 };
 
 }  // namespace AstraSim

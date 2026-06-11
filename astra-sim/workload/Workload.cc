@@ -279,6 +279,9 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     double perf = sys->roofline->get_perf(operational_intensity);
     double elapsed_time = static_cast<double>(node->num_ops()) / perf;  // sec
     uint64_t runtime = static_cast<uint64_t>(elapsed_time * 1e9);  // sec -> ns
+    LoggerFactory::get_logger("workload")->info(
+        "sys[{}] issue_comp: node_id={} num_ops={} runtime_ns={} tick={}",
+        sys->id, node->id(), static_cast<uint64_t>(num_ops), runtime, Sys::boostedTick());
     if (node->is_cpu_op()) {
         hw_resource->tics_cpu_ops += runtime;
     } else {
@@ -363,6 +366,11 @@ void Workload::issue_coll_comm(
     // same pg
     const auto comm_priority = node->comm_priority<uint32_t>();  // default 0u
 
+    LoggerFactory::get_logger("workload")->info(
+        "sys[{}] issue_coll_comm: node_id={} name={} comm_type={} size={} tick={}",
+        sys->id, node->id(), node->name(),
+        static_cast<uint64_t>(comm_type), comm_size, Sys::boostedTick());
+
     if (comm_type == ChakraCollectiveCommType::ALL_REDUCE) {
         DataSet* fp = sys->generate_all_reduce(
             comm_size, involved_dims, comm_group, comm_priority, node->id());
@@ -421,6 +429,10 @@ void Workload::issue_send_comm(
     stats->get_operator_statistics(node->id()).comm_size = size;
     const auto tag = node->comm_tag<uint32_t>();
 
+    LoggerFactory::get_logger("workload")->info(
+        "sys[{}] issue_send_comm: node_id={} src={} dst={} size={} tag={} tick={}",
+        sys->id, node->id(), src, dst, size, tag, Sys::boostedTick());
+
     sim_request snd_req;
     snd_req.srcRank = src;
     snd_req.dstRank = dst;
@@ -453,6 +465,10 @@ void Workload::issue_recv_comm(
     // Record communication size for bandwidth calculation
     stats->get_operator_statistics(node->id()).comm_size = size;
     const auto tag = node->comm_tag<uint32_t>();
+
+    LoggerFactory::get_logger("workload")->info(
+        "sys[{}] issue_recv_comm: node_id={} src={} dst={} size={} tag={} tick={}",
+        sys->id, node->id(), src, dst, size, tag, Sys::boostedTick());
 
     sim_request rcv_req;
     RecvPacketEventHandlerData* rcehd = new RecvPacketEventHandlerData;
@@ -504,6 +520,10 @@ void Workload::call(EventType event, CallData* data) {
         uint64_t node_id = collective_comm_node_id_map[coll_comm_id];
         shared_ptr<Chakra::FeederV3::ETFeederNode> node =
             et_feeder->lookupNode(node_id);
+
+        LoggerFactory::get_logger("workload")->info(
+            "sys[{}] collective_finished: node_id={} name={} exec_time={} tick={}",
+            sys->id, node_id, node->name(), int_data->execution_time, Sys::boostedTick());
 
         if (sys->trace_enabled) {
             LoggerFactory::get_logger("workload")
@@ -557,6 +577,16 @@ void Workload::call(EventType event, CallData* data) {
             hw_resource->release(node);
             stats->record_end(node, Sys::boostedTick());
 
+            if (event == EventType::PacketSent ||
+                event == EventType::PacketReceived) {
+                LoggerFactory::get_logger("workload")->info(
+                    "sys[{}] {}: node_id={} tick={}",
+                    sys->id,
+                    event == EventType::PacketSent ? "packet_sent_finished"
+                                                   : "packet_recv_finished",
+                    wlhd->node_id, Sys::boostedTick());
+            }
+
             // Calculate network bandwidth for point-to-point communications
             if (event == EventType::PacketSent ||
                 event == EventType::PacketReceived) {
@@ -598,6 +628,8 @@ void Workload::call(EventType event, CallData* data) {
 }
 
 void Workload::fire() {
+    LoggerFactory::get_logger("workload")->info(
+        "sys[{}] workload started, tick={}", sys->id, Sys::boostedTick());
     call(EventType::General, NULL);
 }
 

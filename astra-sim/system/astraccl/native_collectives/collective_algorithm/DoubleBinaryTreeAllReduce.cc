@@ -30,8 +30,8 @@ DoubleBinaryTreeAllReduce::DoubleBinaryTreeAllReduce(int id,
 
 void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
     if (state == State::Begin && type == BinaryTree::Type::Leaf) {  // leaf.1
-        (new PacketBundle(stream->owner, stream, false, false, data_size,
-                          MemBus::Transmition::Usual))
+        std::make_shared<PacketBundle>(stream->owner, stream, false, false,
+                                       data_size, MemBus::Transmition::Usual)
             ->send_to_MA();
         state = State::SendingDataToParent;
 
@@ -62,8 +62,8 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
 
     } else if (state == State::WaitingDataFromParent &&
                type == BinaryTree::Type::Leaf) {  // leaf.4
-        (new PacketBundle(stream->owner, stream, false, false, data_size,
-                          MemBus::Transmition::Usual))
+        std::make_shared<PacketBundle>(stream->owner, stream, false, false,
+                                       data_size, MemBus::Transmition::Usual)
             ->send_to_NPU();
         state = State::End;
 
@@ -99,16 +99,16 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
     } else if (state == State::WaitingForTwoChildData &&
                type == BinaryTree::Type::Intermediate &&
                event == EventType::PacketReceived) {  // int.2
-        (new PacketBundle(stream->owner, stream, true, false, data_size,
-                          MemBus::Transmition::Usual))
+        std::make_shared<PacketBundle>(stream->owner, stream, true, false,
+                                       data_size, MemBus::Transmition::Usual)
             ->send_to_NPU();
         state = State::WaitingForOneChildData;
 
     } else if (state == State::WaitingForOneChildData &&
                type == BinaryTree::Type::Intermediate &&
                event == EventType::PacketReceived) {  // int.3
-        (new PacketBundle(stream->owner, stream, true, true, data_size,
-                          MemBus::Transmition::Usual))
+        std::make_shared<PacketBundle>(stream->owner, stream, true, true,
+                                       data_size, MemBus::Transmition::Usual)
             ->send_to_NPU();
         state = State::SendingDataToParent;
 
@@ -147,8 +147,8 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
     } else if (state == State::WaitingDataFromParent &&
                type == BinaryTree::Type::Intermediate &&
                event == EventType::PacketReceived) {  // int.6
-        (new PacketBundle(stream->owner, stream, true, true, data_size,
-                          MemBus::Transmition::Usual))
+        std::make_shared<PacketBundle>(stream->owner, stream, true, true,
+                                       data_size, MemBus::Transmition::Usual)
             ->send_to_NPU();
         state = State::SendingDataToChilds;
 
@@ -196,8 +196,8 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
 
     } else if (state == State::WaitingForOneChildData &&
                type == BinaryTree::Type::Root) {  // root.2
-        (new PacketBundle(stream->owner, stream, true, true, data_size,
-                          MemBus::Transmition::Usual))
+        std::make_shared<PacketBundle>(stream->owner, stream, true, true,
+                                       data_size, MemBus::Transmition::Usual)
             ->send_to_NPU();
         state = State::SendingDataToChilds;
         return;

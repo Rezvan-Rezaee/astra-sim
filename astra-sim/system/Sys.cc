@@ -281,6 +281,8 @@ Sys::~Sys() {
 
     all_sys[id] = nullptr;
 
+    delete collective_impl_lookup;
+
     for (auto lt : logical_topologies) {
         delete lt.second;
     }
@@ -384,7 +386,7 @@ bool Sys::initialize_sys(string name) {
         if (inp_model_shared_bus == 1) {
             model_shared_bus = true;
         } else {
-            model_shared_bus = false;
+            model_shared_bus = false; 
         }
     } else {
         model_shared_bus = false;
@@ -596,6 +598,9 @@ DataSet* Sys::generate_all_reduce(uint64_t size,
                                   CommunicatorGroup* communicator_group,
                                   int explicit_priority,
                                   uint64_t workload_node_id) {
+    LoggerFactory::get_logger("system")->info(
+        "sys[{}] generate_all_reduce: size={} node_id={} tick={}",
+        id, size, workload_node_id, boostedTick());
     if (communicator_group == nullptr) {
         vector<CollectiveImpl*> implementation_per_dimension;
         implementation_per_dimension =
@@ -620,6 +625,9 @@ DataSet* Sys::generate_all_to_all(uint64_t size,
                                   CommunicatorGroup* communicator_group,
                                   int explicit_priority,
                                   uint64_t workload_node_id) {
+    LoggerFactory::get_logger("system")->info(
+        "sys[{}] generate_all_to_all: size={} node_id={} tick={}",
+        id, size, workload_node_id, boostedTick());
     if (communicator_group == nullptr) {
         vector<CollectiveImpl*> implementation_per_dimension;
         implementation_per_dimension =
@@ -644,6 +652,9 @@ DataSet* Sys::generate_all_gather(uint64_t size,
                                   CommunicatorGroup* communicator_group,
                                   int explicit_priority,
                                   uint64_t workload_node_id) {
+    LoggerFactory::get_logger("system")->info(
+        "sys[{}] generate_all_gather: size={} node_id={} tick={}",
+        id, size, workload_node_id, boostedTick());
     if (communicator_group == nullptr) {
         vector<CollectiveImpl*> implementation_per_dimension;
         implementation_per_dimension =
@@ -668,6 +679,9 @@ DataSet* Sys::generate_reduce_scatter(uint64_t size,
                                       CommunicatorGroup* communicator_group,
                                       int explicit_priority,
                                       uint64_t workload_node_id) {
+    LoggerFactory::get_logger("system")->info(
+        "sys[{}] generate_reduce_scatter: size={} node_id={} tick={}",
+        id, size, workload_node_id, boostedTick());
     if (communicator_group == nullptr) {
         vector<CollectiveImpl*> implementation_per_dimension;
         implementation_per_dimension =
@@ -1419,6 +1433,9 @@ int Sys::sim_send(Tick delay,
                   sim_request* request,
                   void (*msg_handler)(void* fun_arg),
                   void* fun_arg) {
+    LoggerFactory::get_logger("system")->info(
+        "sys[{}] sim_send: dst={} count={} tag={} delay={} tick={}",
+        id, dst, count, tag, delay, boostedTick());
     if (delay == 0) {
         comm_NI->sim_send(buffer, count, type, dst, tag, request, msg_handler,
                           fun_arg);
@@ -1440,6 +1457,9 @@ int Sys::sim_recv(Tick delay,
                   sim_request* request,
                   void (*msg_handler)(void* fun_arg),
                   void* fun_arg) {
+    LoggerFactory::get_logger("system")->info(
+        "sys[{}] sim_recv: src={} count={} tag={} delay={} tick={}",
+        id, src, count, tag, delay, boostedTick());
     if (delay == 0) {
         comm_NI->sim_recv(buffer, count, type, src, tag, request, msg_handler,
                           fun_arg);

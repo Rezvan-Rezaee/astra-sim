@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmake *)",
+      "Bash(bash build.sh)",
+      "Bash(awk *)",
+      "Bash(grep -E \"= |;$\")",
+      "Bash(/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/build/bin/AstraSim_SystemC 4 80 0 1)",
+      "Bash(/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/build/bin/AstraSim_SystemC 16 80 0 1)",
+      "Bash(ASAN_OPTIONS=fast_unwind_on_malloc=0 /mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/build/bin/AstraSim_SystemC 16 80 0 1)",
+      "Bash(grep -E \"\\\\.\\(h|hh|hpp\\)$\")",
+      "Bash(git -C /mnt/c/Users/rezva/Documents/paradox/astra-sim show ae17c22 --name-only)",
+      "Bash(git *)",
+      "Bash(grep -E \"\\\\.\\(cc|hh\\)$\")",
+      "Bash(grep -E \"\\\\.\\(hh|h\\)$\")",
+      "Bash(grep -E \"\\\\.\\(h|cc|cpp\\)$\")"
+    ]
+  }
+}

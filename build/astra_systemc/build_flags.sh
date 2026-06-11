@@ -21,7 +21,7 @@ cmake .. \
   -DCMAKE_CXX_FLAGS_DEBUG="-g -O0 -fsanitize=address -fno-omit-frame-pointer" \
   -DCMAKE_EXE_LINKER_FLAGS_DEBUG="-fsanitize=address"
 
-cmake --build . -j 2
+cmake --build . -j 4
 # -j "$(nproc)" tells the build system to compile using as many parallel jobs as your machine has CPU cores.
 # This overwhelemed memory and crashed build on my machine, which has 16 cores and 32GB of RAM. AddressSanitizer can consume a lot of memory, especially when compiling large codebases,
 # so we are limiting the number of jobs/processes to 2 to avoid overwhelming the system, especially if it has a large number of cores.
