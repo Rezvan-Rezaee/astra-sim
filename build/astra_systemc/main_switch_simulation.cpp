@@ -143,7 +143,7 @@ int sc_main(int argc, char** argv) {
     const size_t bytesPerCell = parseUnsignedArg(argv[2], "bytes_per_cell");
     const size_t communicationType =
         parseUnsignedArg(argv[3], "collective_communication_type");
-    const double comm_scale = parseDoubleArg(
+    double comm_scale = parseDoubleArg(
         argv[4], "communication_scale");  // times workload size by this factor
                                           // (1 MiB workload default)
     const size_t et_comm_scale = parseUnsignedArg(argv[4], "et scale");
@@ -180,17 +180,15 @@ int sc_main(int argc, char** argv) {
     const std::string workload_config = workloadDir;
 
     const std::string system_config =
-        "/mnt/c/Users/rezva/Documents/paradox/astra-sim/inputs/system/"
+        "/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/config_files/"
         "my_system_config.json";
 
     const std::string comm_group_config =
-        "/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/"
+        "/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/config_files/"
         "network_cfg_.json";
 
     const std::string remote_memory_configuration =
-        "/mnt/c/Users/rezva/Documents/paradox/astra-sim/examples/remote_memory/"
-        "analytical/no_memory_expansion.json";
-    //    "/../../../build/astra_systemc/no_memory_expansion.json";
+        "/mnt/c/Users/rezva/Documents/paradox/astra-sim/build/astra_systemc/config_files/no_memory_expansion.json";
 
     const std::string run_name = "systemc_astrasim_test";
 

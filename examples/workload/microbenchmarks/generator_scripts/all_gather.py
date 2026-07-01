@@ -30,7 +30,6 @@ def generate_all_gather(npus_count: int, coll_size: int, path='./') -> None:
     # coll size in bytes
     coll_size_bytes = coll_size * 1024 * 1024  # convert MB to bytes
     
-    # generate ET files
     node_id = 0
     
     for npu in range(npus_count):
