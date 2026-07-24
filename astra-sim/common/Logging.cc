@@ -50,12 +50,21 @@ void LoggerFactory::init_default_components(const std::string& log_path) {
 
     auto sink_color_console =
         std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    // TODO(logging-cleanup): raise to warn (or critical) to silence per-op info
+    // noise (e.g. Sys.cc generate_all_reduce/all_to_all/all_gather/reduce_scatter
+    // logs) on the console. Must pair with bumping the final-stats log calls in
+    // Statistics.cc from ->info to ->warn (see Statistics.cc) so they still pass through.
+    // sink_color_console->set_level(spdlog::level::warn);
     sink_color_console->set_level(spdlog::level::info);
     default_sinks.insert(sink_color_console);
 
     auto sink_rotate_out =
         std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
             log_path + "/log.log", 1024 * 1024 * 10, 10);
+    // TODO(logging-cleanup): raise to warn in lockstep with the console sink
+    // above, so astrasim_log_factory/log.log only keeps the final comm/compute
+    // stats (once bumped to ->warn in Statistics.cc) instead of every info log.
+    // sink_rotate_out->set_level(spdlog::level::warn);
     sink_rotate_out->set_level(spdlog::level::debug);
     default_sinks.insert(sink_rotate_out);
 

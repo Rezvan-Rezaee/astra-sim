@@ -5,6 +5,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/Sys.hh"
 
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 
@@ -455,7 +456,7 @@ Tick Sys::boostedTick() {
         }
     }
     timespec_t tmp = ts->comm_NI->sim_get_time();
-    Tick tick = tmp.time_val / CLOCK_PERIOD;
+    Tick tick = static_cast<Tick>(std::llroundl(tmp.time_val / CLOCK_PERIOD));
     return tick;
 }
 
@@ -473,9 +474,14 @@ void Sys::exit_sim_loop(string msg) {
 void Sys::call(EventType type, CallData* data) {}
 
 void Sys::call_events() {
-    // std::cout << "[system] Sys " << id << " is calling events at tick "
-    //           << Sys::boostedTick()
-    //           << " with pending events: " << pending_events << "\n";
+    Tick lookup_tick = Sys::boostedTick();
+    // std::cout << "[DBG-TICK] call_events sys=" << id
+    //           << " looking_up_key=" << lookup_tick
+    //           << " pending_keys=[";
+    // for (auto& kv : event_queue) {
+    //     std::cout << kv.first << ":" << kv.second.size() << " ";
+    // }
+    // std::cout << "]" << std::endl;
     for (auto& callable : event_queue[Sys::boostedTick()]) {
         try {
             pending_events--;
@@ -504,7 +510,12 @@ void Sys::try_register_event(Callable* callable,
                              CallData* callData,
                              Tick& delta_cycles) {
     bool should_schedule = false;
-    auto event_time = Sys::boostedTick() + delta_cycles;
+    Tick current_tick = Sys::boostedTick();
+    auto event_time = current_tick + delta_cycles;
+    // std::cout << "[DBG-TICK] try_register_event sys=" << id
+    //           << " boostedTick=" << current_tick
+    //           << " delta_cycles=" << delta_cycles
+    //           << " -> stored_under_key=" << event_time << std::endl;
     if (event_queue.find(event_time) == event_queue.end()) {
         list<tuple<Callable*, EventType, CallData*>> tmp;
         event_queue[event_time] = tmp;
@@ -532,6 +543,10 @@ void Sys::handleEvent(void* arg) {
     BasicEventHandlerData* ehd = (BasicEventHandlerData*)arg;
     int id = ehd->sys_id;
     EventType event = ehd->event;
+
+    // std::cout << "[DBG-TICK] handleEvent sys=" << id
+    //           << " event=" << static_cast<int>(event)
+    //           << " boostedTick=" << Sys::boostedTick() << std::endl;
 
     if (event == EventType::CallEvents) {
         all_sys[id]->call_events();

@@ -22,7 +22,7 @@ build/astra_systemc/test_log/
 examples/workload/microbenchmarks/all_gather/
 examples/workload/microbenchmarks/all_reduce/
 examples/workload/microbenchmarks/all_to_all/
-examples/workload/
+examples/workload/STAGE/
 
 # Generated Chakra ET files
 *.eg

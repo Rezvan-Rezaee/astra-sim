@@ -143,6 +143,12 @@ Tick Statistics::_calculateTotalRuntimeFromIntervals(
 
 void Statistics::report(std::shared_ptr<spdlog::logger> logger) const {
     const auto& sys_id = workload->sys->id;
+    // TODO(logging-cleanup): bump these specific final-report calls (Wall time,
+    // GPU/CPU/Comm/Remote-mem/Replay time below, and the compute-communication
+    // overlap line further down) from logger->info(...) to logger->warn(...) so
+    // they still print once the console/log.log sink thresholds in Logging.cc
+    // are raised to warn. Leave other ->info calls elsewhere (e.g. Sys.cc
+    // per-op logs) alone; they'll be silenced by the raised sink threshold instead.
     logger->info("sys[{}], Wall time: {}", sys_id, this->wall_time);
     for (const auto& [type, time] : this->type_time) {
         switch (type) {

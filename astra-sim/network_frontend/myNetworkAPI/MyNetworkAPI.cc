@@ -44,6 +44,12 @@ int MyNetworkAPI::sim_send(void* buffer,
 
     net_log()->info("sim_send: rank={} -> dst={} tag={} count={} chunk_id={}",
                     src, dst, tag, count, chunk_id);
+    // std::cout << "[DBG] net_sim_send rank=" << src
+    //           << " -> dst=" << dst
+    //           << " tag=" << tag
+    //           << " count=" << count
+    //           << " chunk_id=" << chunk_id
+    //           << std::endl;
 
     auto entry = callback_tracker.search_entry(tag, src, dst, count, chunk_id);
 
@@ -88,6 +94,12 @@ int MyNetworkAPI::sim_recv(void* buffer,
 
     net_log()->info("sim_recv: rank={} <- src={} tag={} count={} chunk_id={}",
                     dst, src, tag, count, chunk_id);
+    // std::cout << "[DBG] net_sim_recv rank=" << dst
+    //           << " <- src=" << src
+    //           << " tag=" << tag
+    //           << " count=" << count
+    //           << " chunk_id=" << chunk_id
+    //           << std::endl;
 
     auto entry = callback_tracker.search_entry(tag, src, dst, count, chunk_id);
 
@@ -135,6 +147,13 @@ void MyNetworkAPI::process_message_arrival(void* args) {
             "arrival: src={} dst={} tag={} count={} chunk_id={} -> both "
             "callbacks registered, invoking send+recv",
             src, dst, tag, count, chunk_id);
+        // std::cout << "[DBG] msg_arrival src=" << src
+        //           << " dst=" << dst
+        //           << " tag=" << tag
+        //           << " count=" << count
+        //           << " chunk_id=" << chunk_id
+        //           << " both_reg=1"
+        //           << std::endl;
         entry.value()->invoke_send_handler();
         entry.value()->invoke_recv_handler();
 
@@ -144,6 +163,13 @@ void MyNetworkAPI::process_message_arrival(void* args) {
             "arrival: src={} dst={} tag={} count={} chunk_id={} -> recv not "
             "yet registered, marking transmission done",
             src, dst, tag, count, chunk_id);
+        // std::cout << "[DBG] msg_arrival src=" << src
+        //           << " dst=" << dst
+        //           << " tag=" << tag
+        //           << " count=" << count
+        //           << " chunk_id=" << chunk_id
+        //           << " both_reg=0 (recv not yet registered)"
+        //           << std::endl;
         entry.value()->invoke_send_handler();
         entry.value()->set_transmission_finished();
     }

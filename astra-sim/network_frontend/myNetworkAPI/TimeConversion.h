@@ -1,10 +1,12 @@
 #pragma once
 
+#include <cmath>
 #include <systemc>
 #include "astra-sim/system/Common.hh"
 
 inline sc_core::sc_time timespecToSystemCTime(const AstraSim::timespec_t& t)
 {
+    // std::cout << "Converting timespec_t to sc_time: time_res = " << t.time_res << ", time_val = " << t.time_val << std::endl;
     switch (t.time_res)
     {
         case AstraSim::SE:
@@ -31,6 +33,6 @@ inline AstraSim::timespec_t systemCTimeToTimespec(const sc_core::sc_time& t)
 {
     AstraSim::timespec_t ts;
     ts.time_res = AstraSim::NS;
-    ts.time_val = t.to_seconds() * 1e9L;
+    ts.time_val = std::round(t.to_seconds() * 1e9L);
     return ts;
 }

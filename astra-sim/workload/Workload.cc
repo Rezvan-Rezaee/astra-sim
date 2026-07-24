@@ -134,12 +134,11 @@ void Workload::issue_dep_free_nodes() {
     auto dependancy_free_nodes =
         dependancy_resolver.get_dependancy_free_nodes();
 
-    // std::fprintf(
-    //     stderr,
-    //     "[WORKLOAD] READY sys=%d tick=%llu ready_count=%zu ongoing_count=%zu\n",
-    //     sys->id, Sys::boostedTick(), dependancy_free_nodes.size(),
-    //     dependancy_resolver.get_ongoing_nodes().size());
-    // std::fflush(stderr);
+    // std::cout << "[DBG] issue_dep_free_nodes sys=" << sys->id
+    //           << " tick=" << Sys::boostedTick()
+    //           << " ready=" << dependancy_free_nodes.size()
+    //           << " ongoing=" << dependancy_resolver.get_ongoing_nodes().size()
+    //           << std::endl;
 
     std::set<uint64_t> dependancy_free_nodes_set;
     for (const auto node_id : dependancy_free_nodes) {
@@ -147,13 +146,13 @@ void Workload::issue_dep_free_nodes() {
     }
     for (const auto node_id : dependancy_free_nodes_set) {
         std::shared_ptr<ETFeederNode> node = et_feeder->lookupNode(node_id);
-        // std::fprintf(stderr,
-        //              "[WORKLOAD] CHECK sys=%d tick=%llu node=%lu name=%s "
-        //              "type=%d available=%d\n",
-        //              sys->id, Sys::boostedTick(), node->id(),
-        //              node->name().c_str(), static_cast<int>(node->type()),
-        //              hw_resource->is_available(node));
-        // std::fflush(stderr);
+        // std::cout << "[DBG] check_node sys=" << sys->id
+        //           << " tick=" << Sys::boostedTick()
+        //           << " node=" << node->id()
+        //           << " name=" << node->name()
+        //           << " type=" << static_cast<int>(node->type())
+        //           << " avail=" << hw_resource->is_available(node)
+        //           << std::endl;
         if (hw_resource->is_available(node)) {
             issue(node);
         }
@@ -161,11 +160,12 @@ void Workload::issue_dep_free_nodes() {
 }
 
 void Workload::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
-    // std::fprintf(stderr,
-    //              "[WORKLOAD] ISSUE sys=%d tick=%llu node=%lu name=%s type=%d\n",
-    //              sys->id, Sys::boostedTick(), node->id(), node->name().c_str(),
-    //              static_cast<int>(node->type()));
-    // std::fflush(stderr);
+    // std::cout << "[DBG] issue sys=" << sys->id
+    //           << " tick=" << Sys::boostedTick()
+    //           << " node=" << node->id()
+    //           << " name=" << node->name()
+    //           << " type=" << static_cast<int>(node->type())
+    //           << std::endl;
     auto logger = LoggerFactory::get_logger("workload");
     if (sys->trace_enabled) {
         logger->debug("issue,sys->id={}, tick={}, node->id={}, "
@@ -305,9 +305,11 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
-    // std::fprintf(stderr, "[WORKLOAD] COMM sys=%d tick=%llu node=%lu name=%s\n",
-    //              sys->id, Sys::boostedTick(), node->id(), node->name().c_str());
-    // std::fflush(stderr);
+    // std::cout << "[DBG] issue_comm sys=" << sys->id
+    //           << " tick=" << Sys::boostedTick()
+    //           << " node=" << node->id()
+    //           << " name=" << node->name()
+    //           << std::endl;
     if (node->is_cpu_op<bool>(false)) {
         throw std::runtime_error("Comm node should not be on CPU");
     }
@@ -370,6 +372,13 @@ void Workload::issue_coll_comm(
         "sys[{}] issue_coll_comm: node_id={} name={} comm_type={} size={} tick={}",
         sys->id, node->id(), node->name(),
         static_cast<uint64_t>(comm_type), comm_size, Sys::boostedTick());
+    // std::cout << "[DBG] issue_coll_comm sys=" << sys->id
+    //           << " tick=" << Sys::boostedTick()
+    //           << " node=" << node->id()
+    //           << " name=" << node->name()
+    //           << " comm_type=" << static_cast<uint64_t>(comm_type)
+    //           << " size=" << comm_size
+    //           << std::endl;
 
     if (comm_type == ChakraCollectiveCommType::ALL_REDUCE) {
         DataSet* fp = sys->generate_all_reduce(
@@ -507,10 +516,11 @@ void Workload::call(EventType event, CallData* data) {
         return;
     }
 
-    // std::fprintf(
-    //     stderr, "[WORKLOAD] CALLBACK sys=%d tick=%llu event=%d data_null=%d\n",
-    //     sys->id, Sys::boostedTick(), static_cast<int>(event), data == nullptr);
-    // std::fflush(stderr);
+    // std::cout << "[DBG] call sys=" << sys->id
+    //           << " tick=" << Sys::boostedTick()
+    //           << " event=" << static_cast<int>(event)
+    //           << " data_null=" << (data == nullptr)
+    //           << std::endl;
 
     if (event == EventType::CollectiveCommunicationFinished) {
         IntData* int_data = (IntData*)data;
@@ -524,6 +534,12 @@ void Workload::call(EventType event, CallData* data) {
         LoggerFactory::get_logger("workload")->info(
             "sys[{}] collective_finished: node_id={} name={} exec_time={} tick={}",
             sys->id, node_id, node->name(), int_data->execution_time, Sys::boostedTick());
+        // std::cout << "[DBG] coll_done sys=" << sys->id
+        //           << " tick=" << Sys::boostedTick()
+        //           << " node=" << node_id
+        //           << " name=" << node->name()
+        //           << " exec_time=" << int_data->execution_time
+        //           << std::endl;
 
         if (sys->trace_enabled) {
             LoggerFactory::get_logger("workload")
