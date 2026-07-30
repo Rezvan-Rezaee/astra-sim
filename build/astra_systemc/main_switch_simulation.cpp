@@ -171,6 +171,10 @@ int sc_main(int argc, char** argv) {
     SwitchDSS swParadox(numPorts, "DSS", 1200000);
     ScSwitchDSS dut("paradox", swParadox, packetGen, 3);
     // dut.enableDebug(swParams.debugEnabled);
+    // Required for AstraSim-driven traffic: routes driveProcess() through
+    // m_packetGeneratorInterface (instead of synthetic ScPacketGen) and lets
+    // setOrderedMergerDeliveryAll() below actually arm the mergers.
+    dut.setAstraCsvTraceEnabled(true);
     dut.setOrderedMergerDeliveryAll(true);
 #elif defined(USE_HIERXBAR)
     SwitchHierXbar swHierXbar(numPorts, 1200000, "HierXbar");
@@ -192,7 +196,7 @@ int sc_main(int argc, char** argv) {
     // (PacketGeneratorInterface.cpp:237) and printFinalStatsHeader()/printStats()
     // (below, near end of this function) as the summary.
     // dut.setCycleStatsEnabled(false);
-    dut.setCycleStatsEnabled(true);
+    dut.setCycleStatsEnabled(false);
     dut.setActiveCycles(2000000);
 
     PacketGeneratorInterface packetGeneratorInterface(numPorts, bytesPerCell,

@@ -1,7 +1,5 @@
 # AstraSim Codebase — Session Handoff Document
 
-cp /home/rezvan_r/.claude/plans/can-you-explain-to-temporal-aurora.md /mnt/c/Users/rezva/Documents/paradox/astra-sim/SESSION_NOTES.md
-
 **Branch:** `network_api_implementation`
 **Working directory:** `/mnt/c/Users/rezva/Documents/paradox/astra-sim`
 **Session date:** 2026-06-10 / 2026-06-11
@@ -19,7 +17,6 @@ the end of simulation. The user is working on a SystemC-based network frontend
 (`build/astra_systemc/`) and uses a **direct (switch-based) topology**.
 
 Recent commits indicate:
-
 - All communication patterns are running
 - A switch network API interface has been implemented
 - A system config file exists
@@ -32,7 +29,6 @@ Recent commits indicate:
 ### 2.1 What an `.et` file is
 
 A binary Protocol Buffers file. Contains:
-
 1. One `GlobalMetadata` message (version string, written first)
 2. N `Node` messages written sequentially — **one per operation**
 
@@ -41,34 +37,33 @@ For N ranks, there are N files: `workload.0.et`, `workload.1.et`, ..., `workload
 
 ### 2.2 Node types
 
-| NodeType         | Meaning                                            |
-| ---------------- | -------------------------------------------------- |
-| `COMP_NODE`      | One GPU or CPU compute operation                   |
-| `COMM_COLL_NODE` | One collective (AllReduce, AllGather, etc.)        |
-| `COMM_SEND_NODE` | One point-to-point send                            |
-| `COMM_RECV_NODE` | One point-to-point receive                         |
-| `MEM_LOAD_NODE`  | One remote memory read                             |
-| `MEM_STORE_NODE` | One remote memory write                            |
-| `METADATA_NODE`  | Communicator group metadata (parsed, not executed) |
-| `INVALID_NODE`   | Skipped                                            |
+| NodeType | Meaning |
+|---|---|
+| `COMP_NODE` | One GPU or CPU compute operation |
+| `COMM_COLL_NODE` | One collective (AllReduce, AllGather, etc.) |
+| `COMM_SEND_NODE` | One point-to-point send |
+| `COMM_RECV_NODE` | One point-to-point receive |
+| `MEM_LOAD_NODE` | One remote memory read |
+| `MEM_STORE_NODE` | One remote memory write |
+| `METADATA_NODE` | Communicator group metadata (parsed, not executed) |
+| `INVALID_NODE` | Skipped |
 
 ### 2.3 Attributes on a `COMM_COLL_NODE`
 
 Each node carries a generic `repeated AttributeProto attr` list. For a
 collective node, the relevant named attributes are:
 
-| Attribute       | Type        | Meaning                                                          |
-| --------------- | ----------- | ---------------------------------------------------------------- |
-| `comm_size`     | uint64      | Total bytes to communicate                                       |
-| `comm_type`     | uint64 enum | ALL_REDUCE=0, ALL_GATHER=2, REDUCE_SCATTER=7, ALL_TO_ALL=6, etc. |
-| `involved_dim`  | bool_list   | Which topology dimensions participate                            |
-| `comm_priority` | uint32      | Scheduling priority (default 0)                                  |
-| `pg_name`       | string      | Process group / communicator identifier                          |
+| Attribute | Type | Meaning |
+|---|---|---|
+| `comm_size` | uint64 | Total bytes to communicate |
+| `comm_type` | uint64 enum | ALL_REDUCE=0, ALL_GATHER=2, REDUCE_SCATTER=7, ALL_TO_ALL=6, etc. |
+| `involved_dim` | bool_list | Which topology dimensions participate |
+| `comm_priority` | uint32 | Scheduling priority (default 0) |
+| `pg_name` | string | Process group / communicator identifier |
 
 ### 2.4 The dependency graph (DAG)
 
 Nodes are **not** executed sequentially. They form a DAG via:
-
 - `ctrl_deps: [id, id, ...]` — control dependencies
 - `data_deps: [id, id, ...]` — data dependencies
 
@@ -104,13 +99,13 @@ node.attr.append(ChakraAttr(name="comm_size", int64_val=coll_size_bytes))
 `coll_size` affects **exactly one thing**: the `comm_size` attribute on the
 single `COMM_COLL_NODE` in each rank's file.
 
-| Aspect                   | Effect of changing `coll_size`           |
-| ------------------------ | ---------------------------------------- |
-| Number of nodes per file | **None** — always exactly 1              |
-| `comm_size` attribute    | **Yes** — linearly proportional          |
-| GPU/CPU compute time     | **None** — no `COMP_NODE`s exist         |
-| `involved_dim`           | **None** — not set; defaults to all dims |
-| Dependencies             | **None** — node has no parents           |
+| Aspect | Effect of changing `coll_size` |
+|---|---|
+| Number of nodes per file | **None** — always exactly 1 |
+| `comm_size` attribute | **Yes** — linearly proportional |
+| GPU/CPU compute time | **None** — no `COMP_NODE`s exist |
+| `involved_dim` | **None** — not set; defaults to all dims |
+| Dependencies | **None** — node has no parents |
 
 These are **comm-only** traces by design. The log will only show `Wall time`
 and `Comm time` (and they will be equal) because there is nothing else.
@@ -143,7 +138,6 @@ msg_size = remain_size / nodes    (ALL_REDUCE, REDUCE_SCATTER, ALL_TO_ALL)
 ```
 
 **Effect of larger `comm_size`:**
-
 - Larger `chunk_size` → larger `msg_size` at the network layer
 - More streams if `comm_size / preferred_dataset_splits > 1`
 - Longer simulated transfer time → larger `Wall time` / `Comm time`
@@ -156,7 +150,6 @@ msg_size = remain_size / nodes    (ALL_REDUCE, REDUCE_SCATTER, ALL_TO_ALL)
 ### 4.1 ETFeeder
 
 Owns and manages one `.et` file for one rank. Responsibilities:
-
 1. **Startup scan** — reads all nodes sequentially, caches byte offsets, builds
    the dependency graph. Does NOT load node attributes yet.
 2. **Dependency tracking** — maintains the set of currently free nodes
@@ -174,9 +167,9 @@ reads and deserializes the full protobuf, and wraps it. Exposes typed getters:
 
 ### 4.3 How often the `.et` file is physically read
 
-| Phase      | What is read                        | When                               |
-| ---------- | ----------------------------------- | ---------------------------------- |
-| Startup    | Node IDs + dependency lists only    | Once, full sequential scan         |
+| Phase | What is read | When |
+|---|---|---|
+| Startup | Node IDs + dependency lists only | Once, full sequential scan |
 | Issue time | Full node protobuf (all attributes) | Once per node, on-demand via seekg |
 
 ---
@@ -215,10 +208,10 @@ For the `all_gather.py` microbenchmark with one node:
 
 Three single-occupancy slots — only one operation of each type per rank at a time:
 
-| Slot                         | Tracks                |
-| ---------------------------- | --------------------- |
-| `num_in_flight_cpu_ops`      | CPU compute ops       |
-| `num_in_flight_gpu_comp_ops` | GPU compute ops       |
+| Slot | Tracks |
+|---|---|
+| `num_in_flight_cpu_ops` | CPU compute ops |
+| `num_in_flight_gpu_comp_ops` | GPU compute ops |
 | `num_in_flight_gpu_comm_ops` | GPU communication ops |
 
 `is_available()` returns true when the relevant counter == 0.
@@ -226,12 +219,12 @@ Three single-occupancy slots — only one operation of each type per rank at a t
 
 ### 6.2 Network components (system layer)
 
-| Name                | What it is                                                                                              |
-| ------------------- | ------------------------------------------------------------------------------------------------------- |
-| `comm_NI`           | `AstraNetworkAPI*` — the NIC abstraction; boundary between AstraSim and the network backend             |
-| `vnet`              | Virtual network ID on each `sim_request` — identifies the injection queue / virtual channel per message |
-| `QueueLevelHandler` | Per-dimension queue allocator; assigns `vnet` IDs to streams                                            |
-| `SchedulerUnit`     | Tracks active streams per queue; enforces `queue_threshold`                                             |
+| Name | What it is |
+|---|---|
+| `comm_NI` | `AstraNetworkAPI*` — the NIC abstraction; boundary between AstraSim and the network backend |
+| `vnet` | Virtual network ID on each `sim_request` — identifies the injection queue / virtual channel per message |
+| `QueueLevelHandler` | Per-dimension queue allocator; assigns `vnet` IDs to streams |
+| `SchedulerUnit` | Tracks active streams per queue; enforces `queue_threshold` |
 
 Flow: `CollectiveAlgorithm` → `Sys::front_end_sim_send()` → `comm_NI->sim_send(msg_size, dst, vnet, ...)` → network backend.
 
@@ -241,22 +234,21 @@ Flow: `CollectiveAlgorithm` → `Sys::front_end_sim_send()` → `comm_NI->sim_se
 
 Config strings used in system JSON (`all-reduce-implementation`, etc.):
 
-| Config string                  | Algorithm            | Step count                    | Notes                                          |
-| ------------------------------ | -------------------- | ----------------------------- | ---------------------------------------------- |
-| `"ring"`                       | Ring (bidirectional) | `2(N-1)` for AllReduce        | Both directions on separate queues             |
-| `"oneRing"`                    | Ring (one direction) | Same                          | Only Clockwise or Anticlockwise                |
-| `"direct"` / `"direct4"`       | AllToAll             | `N-1` with window parallelism | Best match for switch topology                 |
-| `"oneDirect"` / `"oneDirect4"` | AllToAll (one dir)   | Same                          | Same algorithm, one-direction queue allocation |
-| `"halvingDoubling"`            | Halving-Doubling     | `2·log₂(N)`                   | Standard MPI choice for switched networks      |
-| `"oneHalvingDoubling"`         | HD (one dir)         | Same                          | —                                              |
-| `"doubleBinaryTree"`           | Double Binary Tree   | Tree reduce + broadcast       | AllReduce only                                 |
+| Config string | Algorithm | Step count | Notes |
+|---|---|---|---|
+| `"ring"` | Ring (bidirectional) | `2(N-1)` for AllReduce | Both directions on separate queues |
+| `"oneRing"` | Ring (one direction) | Same | Only Clockwise or Anticlockwise |
+| `"direct"` / `"direct4"` | AllToAll | `N-1` with window parallelism | Best match for switch topology |
+| `"oneDirect"` / `"oneDirect4"` | AllToAll (one dir) | Same | Same algorithm, one-direction queue allocation |
+| `"halvingDoubling"` | Halving-Doubling | `2·log₂(N)` | Standard MPI choice for switched networks |
+| `"oneHalvingDoubling"` | HD (one dir) | Same | — |
+| `"doubleBinaryTree"` | Double Binary Tree | Tree reduce + broadcast | AllReduce only |
 
 ### 7.1 `direct` vs `oneDirect`
 
 Algorithmically identical at runtime — both instantiate `AllToAll` with the
 same window parameter (parsed as `stoi(str.substr(6,5))`). The only difference
 is queue direction allocation:
-
 - `direct` uses both Clockwise and Anticlockwise queues simultaneously
 - `oneDirect` uses only one direction
 
@@ -266,28 +258,24 @@ For a switch topology this distinction is meaningless (no physical ring).
 ### 7.2 For a switch topology
 
 **Best choices:**
-
 - `"direct"` — sends to all peers simultaneously; most natural for a
   non-blocking switch
 - `"halvingDoubling"` — logarithmic steps; better latency at large N
 
 **Poor choice:**
-
 - `"ring"` — artificially serializes traffic through a chain; wastes the switch
 
 ### 7.3 Multi-dimensional config
 
 Each collective can use a different algorithm per topology dimension:
-
 ```json
 {
-  "all-reduce-implementation": ["ring", "halvingDoubling"],
-  "all-gather-implementation": ["direct", "direct"],
+  "all-reduce-implementation":     ["ring", "halvingDoubling"],
+  "all-gather-implementation":     ["direct", "direct"],
   "reduce-scatter-implementation": ["direct"],
-  "all-to-all-implementation": ["halvingDoubling"]
+  "all-to-all-implementation":     ["halvingDoubling"]
 }
 ```
-
 Array index = dimension index.
 
 ---
@@ -317,10 +305,10 @@ For comm-only microbenchmarks (`all_gather.py` etc.): only `Wall time` and
 
 ### 8.2 Optional outputs
 
-| Feature        | Config flag               | Output                                            |
-| -------------- | ------------------------- | ------------------------------------------------- |
+| Feature | Config flag | Output |
+|---|---|---|
 | Roofline model | `roofline_enabled = true` | Compute/memory utilization %, operation intensity |
-| Memory trace   | `track_local_mem = true`  | Perfetto JSON file, viewable at ui.perfetto.dev   |
+| Memory trace | `track_local_mem = true` | Perfetto JSON file, viewable at ui.perfetto.dev |
 
 ### 8.3 What is NOT reported by default
 
@@ -335,14 +323,12 @@ For comm-only microbenchmarks (`all_gather.py` etc.): only `Wall time` and
 ### `comm_scale` parameter
 
 `Sys.hh:285` declares `double comm_scale`. It is:
-
 - Accepted as `--comm-scale` CLI argument in all frontends
 - Stored as `this->comm_scale = comm_scale` in the Sys constructor
 - **Never read again anywhere in the codebase**
 
 In `build/astra_systemc/main_switch_simulation.cpp:276` it is explicitly
 hardcoded back to 1 before being passed to the constructor:
-
 ```cpp
 comm_scale = 1;
 ```
@@ -355,23 +341,23 @@ generators. Changing `--comm-scale` has **zero effect** on simulation results.
 
 ## 10. Key File Reference
 
-| File                                                                                   | Purpose                                           |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `extern/graph_frontend/chakra/schema/protobuf/et_def.proto`                            | Node/graph schema definition                      |
-| `extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h/.cpp`                          | File loading, byte-offset index, dependency graph |
-| `extern/graph_frontend/chakra/src/feeder_v3/dependancy_solver.cpp`                     | Free node tracking, finish_node logic             |
-| `astra-sim/workload/Workload.cc`                                                       | Main execution loop, node dispatch, comm issue    |
-| `astra-sim/workload/HardwareResource.hh/.cc`                                           | CPU/GPU/comm slot tracking                        |
-| `astra-sim/workload/Statistics.cc`                                                     | Per-type timing aggregation and report            |
-| `astra-sim/system/Sys.cc`                                                              | Collective generation, chunking, stream creation  |
-| `astra-sim/system/astraccl/CollectiveImplLookup.cc`                                    | Config string → CollectiveImplType parser         |
-| `astra-sim/system/astraccl/native_collectives/collective_algorithm/Ring.cc`            | Ring algorithm, msg_size formulas                 |
-| `astra-sim/system/astraccl/native_collectives/collective_algorithm/AllToAll.cc`        | Direct/AllToAll algorithm                         |
-| `astra-sim/system/astraccl/native_collectives/collective_algorithm/HalvingDoubling.cc` | HD algorithm                                      |
-| `astra-sim/system/astraccl/native_collectives/logical_topology/RingTopology.cc`        | Ring direction, get_sender/receiver               |
-| `astra-sim/common/AstraNetworkAPI.hh`                                                  | Network interface abstract base                   |
-| `build/astra_systemc/main_switch_simulation.cpp`                                       | SystemC frontend entry point                      |
-| `examples/workload/microbenchmarks/generator_scripts/all_gather.py`                    | Microbenchmark .et generator                      |
+| File | Purpose |
+|---|---|
+| `extern/graph_frontend/chakra/schema/protobuf/et_def.proto` | Node/graph schema definition |
+| `extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h/.cpp` | File loading, byte-offset index, dependency graph |
+| `extern/graph_frontend/chakra/src/feeder_v3/dependancy_solver.cpp` | Free node tracking, finish_node logic |
+| `astra-sim/workload/Workload.cc` | Main execution loop, node dispatch, comm issue |
+| `astra-sim/workload/HardwareResource.hh/.cc` | CPU/GPU/comm slot tracking |
+| `astra-sim/workload/Statistics.cc` | Per-type timing aggregation and report |
+| `astra-sim/system/Sys.cc` | Collective generation, chunking, stream creation |
+| `astra-sim/system/astraccl/CollectiveImplLookup.cc` | Config string → CollectiveImplType parser |
+| `astra-sim/system/astraccl/native_collectives/collective_algorithm/Ring.cc` | Ring algorithm, msg_size formulas |
+| `astra-sim/system/astraccl/native_collectives/collective_algorithm/AllToAll.cc` | Direct/AllToAll algorithm |
+| `astra-sim/system/astraccl/native_collectives/collective_algorithm/HalvingDoubling.cc` | HD algorithm |
+| `astra-sim/system/astraccl/native_collectives/logical_topology/RingTopology.cc` | Ring direction, get_sender/receiver |
+| `astra-sim/common/AstraNetworkAPI.hh` | Network interface abstract base |
+| `build/astra_systemc/main_switch_simulation.cpp` | SystemC frontend entry point |
+| `examples/workload/microbenchmarks/generator_scripts/all_gather.py` | Microbenchmark .et generator |
 
 ---
 
@@ -385,16 +371,13 @@ microbenchmark through the entire system. `comm_size = C bytes`.
 ### Phase 1 — Startup: the initial scan (once, before simulation)
 
 **`Workload` constructor, `Workload.cc:25`:**
-
 ```cpp
 string workload_filename = et_filename + "." + to_string(sys->id) + ".et";
 this->et_feeder = new ETFeeder(workload_filename);
 ```
-
 Each rank opens its own file (e.g. `all_gather.47.et` for rank 47).
 
 **Inside `ETFeeder` constructor:**
-
 - Full sequential scan of the file
 - For each node: reads `id`, `ctrl_deps`, `data_deps` only
 - Caches the **byte offset** of each node in the file (for later random access)
@@ -418,7 +401,6 @@ void Workload::fire() {
 Kicks off the main callback handler.
 
 **`Workload::call()` → `issue_dep_free_nodes()` (`Workload.cc:132`):**
-
 ```cpp
 auto dependancy_free_nodes = dependancy_resolver.get_dependancy_free_nodes();
 // → {node_id = 0}
@@ -492,7 +474,6 @@ this node.
 ### Phase 5 — `Sys::generate_all_gather()` → `generate_collective()` (`Sys.cc:704`)
 
 **Step 1 — chunk size (`Sys.cc:1060`):**
-
 ```cpp
 uint64_t chunk_size = determine_chunk_size(size, ComType::All_Gather);
 // chunk_size = comm_size / preferred_dataset_splits
@@ -500,16 +481,13 @@ uint64_t chunk_size = determine_chunk_size(size, ComType::All_Gather);
 ```
 
 **Step 2 — number of streams (`Sys.cc:720`):**
-
 ```cpp
 int streams = ceil((double)size / chunk_size);
 DataSet* dataset = new DataSet(streams);
 ```
-
 Larger `comm_size` → more streams → more pipeline parallelism.
 
 **Step 3 — dimension loop (`Sys.cc:764`), reversed for ALL_GATHER:**
-
 ```cpp
 // For each active dimension (topology dim size > 1 AND involved_dims[dim] == true):
 pair<int, RingTopology::Direction> queue =
@@ -531,7 +509,6 @@ remain_size = phase.final_data_size;
 ```
 
 **Step 4 — stream creation:**
-
 ```cpp
 StreamBaseline* newStream = new StreamBaseline(this, dataset, stream_id, vect, pri);
 insert_into_ready_list(newStream);
@@ -567,13 +544,13 @@ The network backend receives `msg_size` bytes and simulates the transfer.
 
 **`comm_size` transformation summary:**
 
-| Stage                            | Formula                                             |
-| -------------------------------- | --------------------------------------------------- |
-| `determine_chunk_size`           | `chunk_size = comm_size / preferred_dataset_splits` |
-| `streams`                        | `ceil(comm_size / chunk_size)`                      |
-| `remain_size` (dim 0)            | `= chunk_size`                                      |
-| `msg_size` ALL_GATHER            | `= remain_size` (no division)                       |
-| `msg_size` ALL_REDUCE / RS / A2A | `= remain_size / nodes_in_ring`                     |
+| Stage | Formula |
+|---|---|
+| `determine_chunk_size` | `chunk_size = comm_size / preferred_dataset_splits` |
+| `streams` | `ceil(comm_size / chunk_size)` |
+| `remain_size` (dim 0) | `= chunk_size` |
+| `msg_size` ALL_GATHER | `= remain_size` (no division) |
+| `msg_size` ALL_REDUCE / RS / A2A | `= remain_size / nodes_in_ring` |
 
 ---
 
@@ -582,7 +559,6 @@ The network backend receives `msg_size` bytes and simulates the transfer.
 Network backend finishes → fires `CollectiveCommunicationFinished` on `Workload`.
 
 **`Workload::call()`:**
-
 ```cpp
 hw_resource->release(node);            // GPU comm slot = 0
 stats->record_end(node, tick);         // records end timestamp
@@ -595,13 +571,169 @@ issue_dep_free_nodes();                // checks for next batch (empty)
 
 ### Summary table: what `comm_size` controls end-to-end
 
-| Stage                   | Effect of larger `comm_size`                               |
-| ----------------------- | ---------------------------------------------------------- |
-| ETFeeder scan           | No effect (not read)                                       |
-| `lookupNode()`          | Larger integer loaded into `ETFeederNode`                  |
-| `issue_coll_comm`       | Larger value stored in stats; passed to generator          |
-| `determine_chunk_size`  | Larger `chunk_size` (proportional)                         |
-| Stream count            | More streams if `comm_size / preferred_dataset_splits > 1` |
-| `msg_size` in algorithm | Larger per-message payload                                 |
-| Network backend         | Simulates more bytes → longer simulated time               |
-| Final stat              | Larger `comm_size / wall_time` → higher reported bandwidth |
+| Stage | Effect of larger `comm_size` |
+|---|---|
+| ETFeeder scan | No effect (not read) |
+| `lookupNode()` | Larger integer loaded into `ETFeederNode` |
+| `issue_coll_comm` | Larger value stored in stats; passed to generator |
+| `determine_chunk_size` | Larger `chunk_size` (proportional) |
+| Stream count | More streams if `comm_size / preferred_dataset_splits > 1` |
+| `msg_size` in algorithm | Larger per-message payload |
+| Network backend | Simulates more bytes → longer simulated time |
+| Final stat | Larger `comm_size / wall_time` → higher reported bandwidth |
+
+---
+
+## 12. Object Hierarchy and Ownership
+
+The workload layer does **not** have access to other ranks' ETFeeders. Each rank
+has a fully independent stack. `sc_main` creates N stacks in a loop
+(`main_switch_simulation.cpp:279`):
+
+```
+sc_main
+  ├── schedulers[N]       — one SystemCScheduler per rank (independent)
+  ├── network_apis[N]     — one MyNetworkAPI per rank (independent)
+  ├── memory_api          — ONE shared AnalyticalRemoteMemory (all ranks share)
+  └── systems[N]          — one Sys per rank (independent)
+        │
+        └── Sys (rank R)                           Sys.cc:140
+              ├── this->id = R
+              ├── this->comm_NI = network_apis[R]  ← this rank's NIC only
+              ├── this->remote_mem = memory_api     ← shared
+              ├── this->scheduler_unit              ← owned by this Sys
+              ├── this->vLevels                     ← owned by this Sys
+              ├── this->logical_topologies[...]     ← owned by this Sys
+              └── this->workload                    ← created at Sys.cc:265
+                    │
+                    └── Workload (rank R)
+                          ├── this->et_feeder      ← ETFeeder for rank R only
+                          ├── this->hw_resource    ← HardwareResource for rank R only
+                          └── this->stats          ← Statistics for rank R only
+```
+
+Each `Sys` **owns** its `Workload` (created at `Sys.cc:265`, deleted in
+`~Sys()` at `Sys.cc:304`). Each `Workload` **owns** its `ETFeeder`. No rank
+can see another rank's `Workload` or `ETFeeder`.
+
+### The one exception: `Sys::all_sys`
+
+One piece of global cross-rank state (`Sys.cc:42`):
+```cpp
+vector<Sys*> Sys::all_sys;   // static — shared across all instances
+```
+Every `Sys` registers itself at construction (`Sys.cc:154`):
+```cpp
+this->all_sys[id] = this;
+```
+This lets any `Sys` reach any other `Sys` by rank ID. It is a `Sys`-to-`Sys`
+channel only — `Workload` objects never directly touch each other.
+
+### How ranks actually coordinate
+
+Ranks don't share ETFeeders or Workload state. The only cross-rank path is
+the network layer:
+
+```
+Rank 0 Workload                      Rank 1 Workload
+    │                                     │
+    │ comm_NI->sim_send(...)               │ comm_NI->sim_recv(...)
+    │                                     │
+    ▼                                     ▼
+MyNetworkAPI[0]                MyNetworkAPI[1]
+    │                                     ▲
+    └──────────► Switch (shared) ─────────┘
+```
+
+Each rank drives its own simulation independently from its own ETFeeder. When
+rank 0's `sim_send` delivers a packet to rank 1, the switch calls back into
+rank 1's `MyNetworkAPI`, which triggers rank 1's `sim_recv` completion, which
+fires rank 1's `Workload` callback — advancing rank 1's own DAG.
+
+---
+
+## 13. `involved_dim`, Bandwidth, Streams and Chunks
+
+### `involved_dim`
+
+Your topology has one or more **dimensions**. In the SystemC frontend
+(`main_switch_simulation.cpp:197`):
+```cpp
+const std::vector<int> physical_dims = {static_cast<int>(numPorts)};
+```
+That is a 1-dimensional topology. A 2-GPU-per-node, 8-node cluster might be
+`{2, 8}` — dimension 0 is intra-node, dimension 1 is inter-node.
+
+`involved_dim` is a bool list, one entry per dimension, saying which dimensions
+this collective should traverse:
+- `[true, false]` — communicate only within nodes (dimension 0)
+- `[true, true]`  — full collective across both dimensions
+- `[false, true]` — only across nodes, skip intra-node
+
+In `generate_collective()` (`Sys.cc:812-815`), any dimension where
+`involved_dims[dim] == false` (or has only 1 node) is **skipped entirely** —
+no phase is created, no messages are sent on that dimension.
+
+For the microbenchmark, `involved_dim` is not set in the `.et` node, so
+`Workload.cc:354` defaults it to `[true, true, true, true]`. Since your
+topology only has 1 dimension, the extra trues are ignored (the loop stops at
+`topology->get_num_of_dimensions()`).
+
+### Bandwidth calculation
+
+When I referred to "bandwidth calculation" I was describing something that is
+**tracked but not printed**. The reporting code is fully commented out in
+`Statistics.cc:174-203`:
+
+```cpp
+// stored per node at issue time (Workload.cc:364):
+stats->get_operator_statistics(node->id()).comm_size = comm_size;
+
+// intended to compute at completion time (commented out):
+// stat.network_bandwidth = comm_size / (end_time - start_time)
+// units: bytes/ns = GB/s
+```
+
+`OperatorStatistics` has a `network_bandwidth` field intended for per-collective
+achieved bandwidth, but the entire logging block is commented out. `comm_size`
+is stored but silently unused in the final report.
+
+### Streams and Chunks
+
+These come from the chunking step in `generate_collective()`.
+
+**A chunk** is a slice of `comm_size`:
+```cpp
+chunk_size = comm_size / preferred_dataset_splits   // e.g. 4MB / 4 = 1MB
+streams    = ceil(comm_size / chunk_size)            // = 4
+```
+
+**A stream** (`StreamBaseline`) is one independent pipeline that processes one
+chunk end-to-end. Each stream carries a list of `CollectivePhase` objects —
+one phase per topology dimension. The stream works through phases sequentially:
+finish dimension 0's phase, then start dimension 1's phase, etc.
+
+**A `DataSet`** is the container for all streams belonging to one `.et` node.
+It counts finished streams and fires `CollectiveCommunicationFinished` back to
+`Workload` only when every stream is done (`DataSet.cc:30-48`).
+
+```
+one COMM_COLL_NODE in .et file
+    │
+    └── DataSet  (one per collective node)
+          ├── StreamBaseline 0  →  [Phase dim0] → [Phase dim1] → done
+          ├── StreamBaseline 1  →  [Phase dim0] → [Phase dim1] → done
+          ├── StreamBaseline 2  →  [Phase dim0] → [Phase dim1] → done
+          └── StreamBaseline 3  →  [Phase dim0] → [Phase dim1] → done
+                                                    all 4 done
+                                                        │
+                                              DataSet fires
+                                      CollectiveCommunicationFinished
+                                      → Workload marks node complete
+                                      → DAG advances
+```
+
+The benefit of multiple streams is **pipelining**: stream 1 can be on
+dimension 1 while stream 0 is still on dimension 0, overlapping traffic across
+dimensions. With `preferred_dataset_splits = 1` (typical for a 1D topology),
+there is only one stream — no pipelining, one chunk traversing one dimension.
